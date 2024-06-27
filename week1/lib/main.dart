@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 void main() {
   runApp(const MyApp());
@@ -44,6 +46,29 @@ class _MyHomePageState extends State<MyHomePage> {
     {"name": "흰둥이", "phone": "010-6789-0123"}
   ];
 
+  // 이미지 데이터
+  List<File> _images = [];
+  final ImagePicker _picker = ImagePicker();
+
+
+  
+  Future<void> _pickImage() async {
+    // image 개수 제한
+    // if (_images.length >= 20) {
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(content: Text('You can only upload up to 20 images.')),
+    //   );
+    //   return;
+    // }
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _images.add(File(pickedFile.path));
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -82,10 +107,44 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
-            const Center(child: Text('Content of Tab 2')),
+            imageGalleryTab(),
             const Center(child: Text('Content of Tab 3')),
           ],
         ),
+         floatingActionButton: FloatingActionButton(
+          onPressed: _pickImage,
+          tooltip: 'Pick Image',
+          child: Icon(Icons.add_a_photo),
+        ),
+
+      ),
+    );
+  }
+
+  Widget imageGalleryTab() {
+    return _images.isEmpty ? Center(
+      child: Container(
+        color: Colors.grey[200],
+        child: Center(
+          child: Text(
+            'No images added yet',
+            style: TextStyle(color: Colors.grey[700], fontSize: 18),
+          ),
+        ),
+      ),
+    )
+      : Padding(
+      padding: const EdgeInsets.all(8),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, 
+          crossAxisSpacing: 4.0,
+          mainAxisSpacing: 4.0,
+          ),
+        itemCount: _images.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Image.file(_images[index], fit:BoxFit.cover);
+        },
       ),
     );
   }
