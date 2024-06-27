@@ -30,12 +30,33 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
           title: const Text(
-        ("Title Text"),
-      )),
-      body: const Center(child: Text("Hello World, create branch!")),
+            'Health Tracker',
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'contact'),
+              Tab(text: 'image'),
+              Tab(text: 'health'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            Center(child: Text('Content of Tab 1')),
+            Center(child: Text('Content of Tab 2')),
+            Center(child: Text('Content of Tab 3')),
+          ],
+        ),
+      ),
     );
   }
 }
