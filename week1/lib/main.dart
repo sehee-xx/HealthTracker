@@ -28,6 +28,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // 연락처 데이터
+  final List<Map<String, String>> contacts = [
+    {"name": "짱구", "phone": "010-1234-5678"},
+    {"name": "철수", "phone": "010-2345-6789"},
+    {"name": "유리", "phone": "010-3456-7890"},
+    {"name": "맹구", "phone": "010-4567-8901"},
+    {"name": "훈이", "phone": "010-5678-9012"},
+    {"name": "흰둥이", "phone": "010-6789-0123"},
+    {"name": "짱구", "phone": "010-1234-5678"},
+    {"name": "철수", "phone": "010-2345-6789"},
+    {"name": "유리", "phone": "010-3456-7890"},
+    {"name": "맹구", "phone": "010-4567-8901"},
+    {"name": "훈이", "phone": "010-5678-9012"},
+    {"name": "흰둥이", "phone": "010-6789-0123"}
+  ];
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -43,17 +59,31 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'contact'),
-              Tab(text: 'image'),
-              Tab(text: 'health'),
+              Tab(text: 'Contact'),
+              Tab(text: 'Image'),
+              Tab(text: 'Health'),
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            Center(child: Text('Content of Tab 1')),
-            Center(child: Text('Content of Tab 2')),
-            Center(child: Text('Content of Tab 3')),
+            ListView.builder(
+              itemCount: contacts.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
+                    title: Text(contacts[index]['name']!),
+                    subtitle: Text(contacts[index]['phone']!),
+                    leading: const Icon(Icons.contact_phone,
+                        color: Colors.deepPurple),
+                  ),
+                );
+              },
+            ),
+            const Center(child: Text('Content of Tab 2')),
+            const Center(child: Text('Content of Tab 3')),
           ],
         ),
       ),
