@@ -44,6 +44,13 @@ class _MyHomePageState extends State<MyHomePage> {
     {"name": "흰둥이", "phone": "010-6789-0123"}
   ];
 
+  // 건강 데이터
+  final List<Map<String, String>> healthData = [
+    {"title": "걸음수", "value": "8,000"},
+    {"title": "소모 칼로리", "value": "2,500 kcal"},
+    {"title": "심박수", "value": "75 bpm"},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -83,7 +90,50 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             const Center(child: Text('Content of Tab 2')),
-            const Center(child: Text('Content of Tab 3')),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  const Card(
+                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
+                      title: Text('걸음수'),
+                      subtitle: Text('8,000'),
+                      leading:
+                          Icon(Icons.directions_walk, color: Colors.deepPurple),
+                    ),
+                  ),
+                  const Card(
+                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
+                      title: Text('소모 칼로리'),
+                      subtitle: Text('2,500 kcal'),
+                      leading: Icon(Icons.local_fire_department,
+                          color: Colors.deepPurple),
+                    ),
+                  ),
+                  const Card(
+                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
+                      title: Text('심박수'),
+                      subtitle: Text('75 bpm'),
+                      leading: Icon(Icons.favorite, color: Colors.deepPurple),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Add your onPressed code here!
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple, // Button color
+                      foregroundColor: Colors.white, // Text color
+                    ),
+                    child: const Text('자세한 정보 보기'),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
