@@ -111,11 +111,6 @@ class _MyHomePageState extends State<MyHomePage> {
             const Center(child: Text('Content of Tab 3')),
           ],
         ),
-         floatingActionButton: FloatingActionButton(
-          onPressed: _pickImage,
-          tooltip: 'Pick Image',
-          child: Icon(Icons.add_a_photo),
-        ),
 
       ),
     );
