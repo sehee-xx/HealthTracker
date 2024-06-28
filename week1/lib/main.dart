@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:convert'; // JSON 파싱을 위해 추가
+import 'dart:convert';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -148,50 +148,7 @@ class _MyHomePageState extends State<MyHomePage>
             },
           ),
           imageGalleryTab(),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: [
-                const Card(
-                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: ListTile(
-                    title: Text('걸음수'),
-                    subtitle: Text('8,000'),
-                    leading:
-                        Icon(Icons.directions_walk, color: Colors.deepPurple),
-                  ),
-                ),
-                const Card(
-                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: ListTile(
-                    title: Text('소모 칼로리'),
-                    subtitle: Text('2,500 kcal'),
-                    leading: Icon(Icons.local_fire_department,
-                        color: Colors.deepPurple),
-                  ),
-                ),
-                const Card(
-                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: ListTile(
-                    title: Text('심박수'),
-                    subtitle: Text('75 bpm'),
-                    leading: Icon(Icons.favorite, color: Colors.deepPurple),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    // Add your onPressed code here!
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple, // Button color
-                    foregroundColor: Colors.white, // Text color
-                  ),
-                  child: const Text('자세한 정보 보기'),
-                ),
-              ],
-            ),
-          ),
+          HealthRecordWidget(),
         ],
       ),
       floatingActionButton: _tabController.index == 1
@@ -356,6 +313,217 @@ class ContactDetailPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class HealthRecordWidget extends StatefulWidget {
+  const HealthRecordWidget({super.key});
+
+  @override
+  _HealthRecordWidgetState createState() => _HealthRecordWidgetState();
+}
+
+class _HealthRecordWidgetState extends State<HealthRecordWidget> {
+  int stepsCount = 8000;
+  double calorieBurned = 2500.0;
+  int heartRate = 75;
+
+  void updateSteps(int steps) {
+    setState(() {
+      stepsCount = steps;
+    });
+  }
+
+  void updateCalories(double calories) {
+    setState(() {
+      calorieBurned = calories;
+    });
+  }
+
+  void updateHeartRate(int rate) {
+    setState(() {
+      heartRate = rate;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 16.0),
+            HealthItemCard(
+              icon: Icons.directions_walk,
+              title: '걸음수',
+              value: '$stepsCount',
+              unit: 'steps',
+              onPressed: () async {
+                final result = await showDialog<int>(
+                  context: context,
+                  builder: (context) {
+                    return NumberInputDialog(
+                      title: '걸음수 수정',
+                      initialValue: stepsCount,
+                    );
+                  },
+                );
+                if (result != null) updateSteps(result);
+              },
+            ),
+            HealthItemCard(
+              icon: Icons.local_fire_department,
+              title: '소모 칼로리',
+              value: '$calorieBurned',
+              unit: 'kcal',
+              onPressed: () async {
+                final result = await showDialog<double>(
+                  context: context,
+                  builder: (context) {
+                    return NumberInputDialog(
+                      title: '소모 칼로리 수정',
+                      initialValue: calorieBurned,
+                      isDouble: true,
+                    );
+                  },
+                );
+                if (result != null) updateCalories(result);
+              },
+            ),
+            HealthItemCard(
+              icon: Icons.favorite,
+              title: '심박수',
+              value: '$heartRate',
+              unit: 'bpm',
+              onPressed: () async {
+                final result = await showDialog<int>(
+                  context: context,
+                  builder: (context) {
+                    return NumberInputDialog(
+                      title: '심박수 수정',
+                      initialValue: heartRate,
+                    );
+                  },
+                );
+                if (result != null) updateHeartRate(result);
+              },
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Add your onPressed code here!
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple, // Button color
+                foregroundColor: Colors.white, // Text color
+              ),
+              child: const Text('자세한 정보 보기'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HealthItemCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final String unit;
+  final VoidCallback onPressed;
+
+  const HealthItemCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.unit,
+    required this.onPressed,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.deepPurple),
+        title: Text('$title: $value $unit'),
+        trailing: IconButton(
+          icon: const Icon(Icons.edit, color: Colors.deepPurple),
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}
+
+class NumberInputDialog extends StatefulWidget {
+  final String title;
+  final dynamic initialValue;
+  final bool isDouble;
+
+  const NumberInputDialog({
+    required this.title,
+    required this.initialValue,
+    this.isDouble = false,
+    super.key,
+  });
+
+  @override
+  _NumberInputDialogState createState() => _NumberInputDialogState();
+}
+
+class _NumberInputDialogState extends State<NumberInputDialog> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.isDouble
+          ? widget.initialValue.toString()
+          : widget.initialValue.toString(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        keyboardType: widget.isDouble
+            ? TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.number,
+        decoration: const InputDecoration(hintText: 'Enter value'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('취소'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (widget.isDouble) {
+              final value = double.tryParse(_controller.text);
+              if (value != null) {
+                Navigator.of(context).pop(value);
+              }
+            } else {
+              final value = int.tryParse(_controller.text);
+              if (value != null) {
+                Navigator.of(context).pop(value);
+              }
+            }
+          },
+          child: const Text('저장'),
+        ),
+      ],
     );
   }
 }
