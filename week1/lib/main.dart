@@ -337,12 +337,12 @@ class ContactDetailPage extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () async {
-                final url = 'tel:${Uri.encodeFull(phone)}';
+                final url =
+                    'tel:${Uri.encodeFull(phone)}'; // tel: 프로토콜을 사용하여 전화 걸기
                 if (await canLaunch(url)) {
                   await launch(url);
                 } else {
-                  // URL을 열 수 없는 경우 예외 처리
-                  throw 'Could not launch $url';
+                  throw 'Could not launch $url'; // URL을 열 수 없는 경우 예외 처리
                 }
               },
               icon: const Icon(Icons.phone),
