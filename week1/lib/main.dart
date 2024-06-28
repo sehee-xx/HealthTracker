@@ -13,9 +13,11 @@ class ImageTuple {
   final File image;
   final String author;
   final DateTime timeStamp;
+  final List<String> comments;
 
-  ImageTuple(this.image, this.author, this.timeStamp);
+  ImageTuple(this.image, this.author, this.timeStamp, this.comments);
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -47,6 +49,7 @@ class _MyHomePageState extends State<MyHomePage>
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
+
   @override
   void initState() {
     super.initState();
@@ -56,6 +59,8 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
   }
+
+  
 
   Future<void> _loadContacts() async {
     try {
@@ -78,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now()));
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), []));
       });
     }
   }
@@ -208,75 +213,77 @@ class _MyHomePageState extends State<MyHomePage>
   void showImage(int index) {
     ImageTuple imageTuple = _images[index];
     File image = imageTuple.image;
+    TextEditingController commentController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            children: [
-              GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.file(image),
-                      SizedBox(height: 10),
-                      Text(
-                        '${imageTuple.author}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _images.removeAt(index);
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'delete',
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: Container(
+              color: Colors.black.withOpacity(0.2),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.file(image, fit: BoxFit.cover),
+                    SizedBox(height: 10),
+                    Text(
+                      '${imageTuple.author}',
                       style: TextStyle(
-                        color: Colors.deepPurple,
-                        fontSize: 18,
+                        color: Colors.white,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
+                    SizedBox(height: 5),
+                    Text(
+                      '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: TextField(
+                        controller: commentController,
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Enter your comment',
+                          hintStyle: TextStyle(color: Colors.white54),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        String comment = commentController.text;
+                        // 댓글 저장 로직 추가 가능
+                        print('Comment: $comment');
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Text('Add Comment'),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },
