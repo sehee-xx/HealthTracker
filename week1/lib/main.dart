@@ -29,6 +29,13 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class Image {
+  final File image;
+  final String author;
+  final DateTime timeStamp;
+  Image(this.image, this.author, this.timeStamp);
+}
+
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   // 연락처 데이터
@@ -47,10 +54,7 @@ class _MyHomePageState extends State<MyHomePage>
     {"name": "흰둥이", "phone": "010-6789-0123"}
   ];
 
-  // 이미지 데이터
-  List<File> _images = [];
-  final ImagePicker _picker = ImagePicker();
-  late TabController _tabController;
+  
 
   @override
   void initState() {
@@ -61,12 +65,18 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
-  Future<void> _pickImage() async {
+  // 이미지 데이터
+
+  List<Image> _images = [];
+  final ImagePicker _picker = ImagePicker();
+  late TabController _tabController;
+
+  Future<void> _pickImage(String author) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(File(pickedFile.path));
+        _images.add(Image(File(pickedFile.path), author, DateTime.now()));
       });
     }
   }
@@ -193,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage>
       ),
       floatingActionButton: _tabController.index == 1
           ? FloatingActionButton(
-              onPressed: _pickImage,
+              onPressed: _pickImage('수지'),
               tooltip: 'Pick Image',
               child: const Icon(Icons.add_a_photo),
             )
@@ -226,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage>
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
                   onTap: () {showImage(index);},
-                  child: Image.file(_images[index], fit: BoxFit.cover),
+                  child: Image.file(_images[index].image, fit: BoxFit.cover),
                 );
               },
             ),
@@ -235,7 +245,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-    File image = _images[index];
+    File image = _images[index].image;
     showDialog(context: context, builder: (BuildContext context) {
       return Dialog(
         backgroundColor: Colors.transparent,
