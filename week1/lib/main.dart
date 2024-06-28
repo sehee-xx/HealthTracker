@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert'; // JSON 파싱을 위해 추가
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
@@ -248,7 +249,8 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-    File image = _images[index].image;
+    ImageTuple imageTuple = _images[index];
+    File image = imageTuple.image;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -258,16 +260,38 @@ class _MyHomePageState extends State<MyHomePage>
           child: Stack(
             children: [
               GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.2),
-                  child: Center(
-                    child: Image.file(image),
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                color: Colors.black.withOpacity(0.2),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.file(image),
+                      SizedBox(height: 10),
+                      Text(
+                        '${imageTuple.author}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
               Positioned(
                 top: 10,
                 right: 10,
