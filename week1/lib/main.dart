@@ -8,6 +8,14 @@ void main() {
   runApp(const MyApp());
 }
 
+class ImageTuple {
+  final File image;
+  final String author;
+  final DateTime timeStamp;
+
+  ImageTuple(this.image, this.author, this.timeStamp);
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -34,7 +42,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
-  List<File> _images = [];
+  List<ImageTuple> _images = [];
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
@@ -69,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(File(pickedFile.path));
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now()));
       });
     }
   }
@@ -231,7 +239,7 @@ class _MyHomePageState extends State<MyHomePage>
                   onTap: () {
                     showImage(index);
                   },
-                  child: Image.file(_images[index], fit: BoxFit.cover),
+                  child: Image.file(_images[index].image, fit: BoxFit.cover),
                 );
               },
             ),
@@ -240,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-    File image = _images[index];
+    File image = _images[index].image;
     showDialog(
       context: context,
       builder: (BuildContext context) {
