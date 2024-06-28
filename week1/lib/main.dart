@@ -68,7 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
 
-
     // 건강 데이터
     final List<Map<String, String>> healthData = [
       {"title": "걸음수", "value": "8,000"},
