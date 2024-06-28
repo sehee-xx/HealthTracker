@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math'; // Import the dart:math library for random number generation
+import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SplashScreen(), // 초기 화면으로 SplashScreen 사용
+      home: const SplashScreen(),
     );
   }
 }
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Health Tracker',
               style: TextStyle(
-                color: Colors.deepPurple, // 보라색 글씨
+                color: Colors.deepPurple,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage>
     "너 자신을 믿어라"
   ];
 
-  String currentQuote = "오늘 할 운동을 내일로 미루지 말자"; // Default quote
+  String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
   @override
   void initState() {
@@ -138,7 +138,6 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  // Function to select a random quote
   void _showRandomQuote() {
     final random = Random();
     final randomIndex = random.nextInt(quotes.length);
@@ -509,11 +508,11 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Add your onPressed code here!
+                // 추가해야 함
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple, // Button color
-                foregroundColor: Colors.white, // Text color
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
               ),
               child: const Text('자세한 정보 보기'),
             ),
