@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert'; // JSON 파싱을 위해 추가
 import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -227,7 +228,9 @@ class _MyHomePageState extends State<MyHomePage>
               itemCount: _images.length,
               itemBuilder: (BuildContext context, int index) {
                 return GestureDetector(
-                  onTap: () {showImage(index);},
+                  onTap: () {
+                    showImage(index);
+                  },
                   child: Image.file(_images[index], fit: BoxFit.cover),
                 );
               },
@@ -238,31 +241,37 @@ class _MyHomePageState extends State<MyHomePage>
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
     File image = _images[index];
-    showDialog(context: context, builder: (BuildContext context) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.all(10),
-        child: Stack(
-          children: [
-            GestureDetector(
-              onTap: () {Navigator.of(context).pop();},
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-                child: Center(child: Image.file(image),),
-              ),
-            ),
-            Positioned (
-              top: 10,
-              right: 10,
-              child: GestureDetector(
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              GestureDetector(
                 onTap: () {
-                  setState(() {
-                    _images.removeAt(index);
-                  });
                   Navigator.of(context).pop();
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  color: Colors.black.withOpacity(0.2),
+                  child: Center(
+                    child: Image.file(image),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _images.removeAt(index);
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(5),
@@ -275,14 +284,14 @@ class _MyHomePageState extends State<MyHomePage>
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
                 ),
               ),
-              
-            ),
-          ],
-        ),
-      );
-    },);
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -327,47 +336,14 @@ class ContactDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(
-                        '$name에게 전화를 거시겠습니까?',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // 다이얼로그 닫기
-                          },
-                          child: const Text('취소'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // 다이얼로그 닫기
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PhoneCallPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 24), // 패딩 조정
-                          ),
-                          child: const Text(
-                            '확인',
-                            style: TextStyle(fontSize: 12), // 폰트 크기 조정
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
+              onPressed: () async {
+                final url = 'tel:${Uri.encodeFull(phone)}';
+                if (await canLaunch(url)) {
+                  await launch(url);
+                } else {
+                  // URL을 열 수 없는 경우 예외 처리
+                  throw 'Could not launch $url';
+                }
               },
               icon: const Icon(Icons.phone),
               label: const Text('전화하기'),
