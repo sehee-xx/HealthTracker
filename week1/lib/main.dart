@@ -91,6 +91,31 @@ class _MyHomePageState extends State<MyHomePage>
           ],
         ),
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const UserAccountsDrawerHeader(
+              decoration: BoxDecoration(color: Colors.deepPurple),
+              accountName: Text("수지"),
+              accountEmail: Text("suzi@gmail.com"),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(
+                  Icons.person,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ),
+            ListTile(
+              title: const Text("수지의 건강 기록"),
+              onTap: () {
+                // Add your onTap logic here
+              },
+            ),
+          ],
+        ),
+      ),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -104,6 +129,17 @@ class _MyHomePageState extends State<MyHomePage>
                   subtitle: Text(contacts[index]['phone']!),
                   leading:
                       const Icon(Icons.contact_phone, color: Colors.deepPurple),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContactDetailPage(
+                          name: contacts[index]['name']!,
+                          phone: contacts[index]['phone']!,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               );
             },
@@ -159,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage>
           ? FloatingActionButton(
               onPressed: _pickImage,
               tooltip: 'Pick Image',
-              child: Icon(Icons.add_a_photo),
+              child: const Icon(Icons.add_a_photo),
             )
           : null,
     );
@@ -192,5 +228,138 @@ class _MyHomePageState extends State<MyHomePage>
               },
             ),
           );
+  }
+}
+
+class ContactDetailPage extends StatelessWidget {
+  final String name;
+  final String phone;
+
+  const ContactDetailPage({required this.name, required this.phone});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(name),
+      ),
+      body: Container(
+        color: Colors.deepPurple[50], // 연한 보라색 배경색
+        width: double.infinity, // 전체 너비 채우기
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center, // 주축 방향에서 가운데 정렬
+          crossAxisAlignment: CrossAxisAlignment.center, // 교차축 방향에서 가운데 정렬
+          children: [
+            const CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.deepPurple,
+              child: Icon(
+                Icons.person,
+                size: 50,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              phone,
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(
+                        '$name에게 전화를 거시겠습니까?',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // 다이얼로그 닫기
+                          },
+                          child: const Text('취소'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // 다이얼로그 닫기
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PhoneCallPage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24), // 패딩 조정
+                          ),
+                          child: const Text(
+                            '확인',
+                            style: TextStyle(fontSize: 12), // 폰트 크기 조정
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: const Icon(Icons.phone),
+              label: const Text('전화하기'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PhoneCallPage extends StatelessWidget {
+  const PhoneCallPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '전화 연결 중입니다...',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('전화 끊기'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
