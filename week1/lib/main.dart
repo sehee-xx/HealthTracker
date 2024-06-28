@@ -356,9 +356,7 @@ class ContactDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(name),
-      ),
+      appBar: AppBar(),
       body: Container(
         color: Colors.deepPurple[50], // 연한 보라색 배경색
         width: double.infinity, // 전체 너비 채우기
