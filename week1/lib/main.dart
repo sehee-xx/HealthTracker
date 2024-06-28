@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'dart:convert'; // JSON 파싱을 위해 추가
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
