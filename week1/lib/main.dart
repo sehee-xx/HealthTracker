@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math'; // Import the dart:math library for random number generation
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
@@ -47,6 +48,17 @@ class _MyHomePageState extends State<MyHomePage>
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
+  // List of motivational quotes
+  final List<String> quotes = [
+    "오늘 할 운동을 내일로 미루지 말자",
+    "지금이 가장 중요한 순간이다",
+    "매일 조금씩 더 나아지자",
+    "포기하지 마라",
+    "너 자신을 믿어라"
+  ];
+
+  String currentQuote = "오늘 할 운동을 내일로 미루지 말자"; // Default quote
+
   @override
   void initState() {
     super.initState();
@@ -81,6 +93,15 @@ class _MyHomePageState extends State<MyHomePage>
         _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now()));
       });
     }
+  }
+
+  // Function to select a random quote
+  void _showRandomQuote() {
+    final random = Random();
+    final randomIndex = random.nextInt(quotes.length);
+    setState(() {
+      currentQuote = quotes[randomIndex];
+    });
   }
 
   @override
@@ -120,9 +141,9 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             ListTile(
-              title: const Text("수지의 건강 기록"),
+              title: Text(currentQuote),
               onTap: () {
-                // Add your onTap logic here
+                _showRandomQuote();
               },
             ),
           ],
