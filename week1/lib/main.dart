@@ -3,9 +3,18 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+class ImageTuple {
+  final File image;
+  final String author;
+  final DateTime timeStamp;
+
+  ImageTuple(this.image, this.author, this.timeStamp);
 }
 
 class MyApp extends StatelessWidget {
@@ -34,7 +43,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
-  List<File> _images = [];
+  List<ImageTuple> _images = [];
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
@@ -69,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(File(pickedFile.path));
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now()));
       });
     }
   }
@@ -188,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage>
                   onTap: () {
                     showImage(index);
                   },
-                  child: Image.file(_images[index], fit: BoxFit.cover),
+                  child: Image.file(_images[index].image, fit: BoxFit.cover),
                 );
               },
             ),
@@ -197,7 +206,8 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-    File image = _images[index];
+    ImageTuple imageTuple = _images[index];
+    File image = imageTuple.image;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -207,16 +217,38 @@ class _MyHomePageState extends State<MyHomePage>
           child: Stack(
             children: [
               GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.2),
-                  child: Center(
-                    child: Image.file(image),
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                color: Colors.black.withOpacity(0.2),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.file(image),
+                      SizedBox(height: 10),
+                      Text(
+                        '${imageTuple.author}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+            ),
               Positioned(
                 top: 10,
                 right: 10,
