@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert'; // JSON 파싱을 위해 추가
 import 'dart:io';
 
 void main() {
@@ -31,23 +32,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
-  // 연락처 데이터
-  final List<Map<String, String>> contacts = [
-    {"name": "짱구", "phone": "010-1234-5678"},
-    {"name": "철수", "phone": "010-2345-6789"},
-    {"name": "유리", "phone": "010-3456-7890"},
-    {"name": "맹구", "phone": "010-4567-8901"},
-    {"name": "훈이", "phone": "010-5678-9012"},
-    {"name": "흰둥이", "phone": "010-6789-0123"},
-    {"name": "짱구", "phone": "010-1234-5678"},
-    {"name": "철수", "phone": "010-2345-6789"},
-    {"name": "유리", "phone": "010-3456-7890"},
-    {"name": "맹구", "phone": "010-4567-8901"},
-    {"name": "훈이", "phone": "010-5678-9012"},
-    {"name": "흰둥이", "phone": "010-6789-0123"}
-  ];
-
-  // 이미지 데이터
+  List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
@@ -59,6 +44,23 @@ class _MyHomePageState extends State<MyHomePage>
     _tabController.addListener(() {
       setState(() {}); // Tab 변경 시 상태 업데이트
     });
+    _loadContacts(); // JSON 데이터를 불러오는 함수 호출
+  }
+
+  Future<void> _loadContacts() async {
+    try {
+      final String response = await DefaultAssetBundle.of(context)
+          .loadString('assets/contacts.json');
+      final List<dynamic> data = json.decode(response);
+      setState(() {
+        contacts = data
+            .map<Map<String, String>>((e) =>
+                {"name": e["name"] as String, "phone": e["phone"] as String})
+            .toList();
+      });
+    } catch (e) {
+      print('Error loading contacts.json: $e');
+    }
   }
 
   Future<void> _pickImage() async {
@@ -374,6 +376,7 @@ class ContactDetailPage extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
