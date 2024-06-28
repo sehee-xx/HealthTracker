@@ -29,7 +29,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   // 연락처 데이터
   final List<Map<String, String>> contacts = [
     {"name": "짱구", "phone": "010-1234-5678"},
@@ -49,6 +50,16 @@ class _MyHomePageState extends State<MyHomePage> {
   // 이미지 데이터
   List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      setState(() {}); // Tab 변경 시 상태 업데이트
+    });
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -62,95 +73,95 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Health Tracker',
-            style: TextStyle(
-              color: Colors.deepPurple,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Contact'),
-              Tab(text: 'Image'),
-              Tab(text: 'Health'),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Health Tracker',
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: TabBarView(
-          children: [
-            ListView.builder(
-              itemCount: contacts.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: ListTile(
-                    title: Text(contacts[index]['name']!),
-                    subtitle: Text(contacts[index]['phone']!),
-                    leading: const Icon(Icons.contact_phone,
-                        color: Colors.deepPurple),
-                  ),
-                );
-              },
-            ),
-            imageGalleryTab(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  const Card(
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child: ListTile(
-                      title: Text('걸음수'),
-                      subtitle: Text('8,000'),
-                      leading:
-                          Icon(Icons.directions_walk, color: Colors.deepPurple),
-                    ),
-                  ),
-                  const Card(
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child: ListTile(
-                      title: Text('소모 칼로리'),
-                      subtitle: Text('2,500 kcal'),
-                      leading: Icon(Icons.local_fire_department,
-                          color: Colors.deepPurple),
-                    ),
-                  ),
-                  const Card(
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    child: ListTile(
-                      title: Text('심박수'),
-                      subtitle: Text('75 bpm'),
-                      leading: Icon(Icons.favorite, color: Colors.deepPurple),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Add your onPressed code here!
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple, // Button color
-                      foregroundColor: Colors.white, // Text color
-                    ),
-                    child: const Text('자세한 정보 보기'),
-                  ),
-                ],
-              ),
-            ),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Contact'),
+            Tab(text: 'Image'),
+            Tab(text: 'Health'),
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _pickImage,
-          tooltip: 'Pick Image',
-          child: Icon(Icons.add_a_photo),
-        ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          ListView.builder(
+            itemCount: contacts.length,
+            itemBuilder: (context, index) {
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: ListTile(
+                  title: Text(contacts[index]['name']!),
+                  subtitle: Text(contacts[index]['phone']!),
+                  leading:
+                      const Icon(Icons.contact_phone, color: Colors.deepPurple),
+                ),
+              );
+            },
+          ),
+          imageGalleryTab(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                const Card(
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
+                    title: Text('걸음수'),
+                    subtitle: Text('8,000'),
+                    leading:
+                        Icon(Icons.directions_walk, color: Colors.deepPurple),
+                  ),
+                ),
+                const Card(
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
+                    title: Text('소모 칼로리'),
+                    subtitle: Text('2,500 kcal'),
+                    leading: Icon(Icons.local_fire_department,
+                        color: Colors.deepPurple),
+                  ),
+                ),
+                const Card(
+                  margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
+                    title: Text('심박수'),
+                    subtitle: Text('75 bpm'),
+                    leading: Icon(Icons.favorite, color: Colors.deepPurple),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    // Add your onPressed code here!
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple, // Button color
+                    foregroundColor: Colors.white, // Text color
+                  ),
+                  child: const Text('자세한 정보 보기'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: _tabController.index == 1
+          ? FloatingActionButton(
+              onPressed: _pickImage,
+              tooltip: 'Pick Image',
+              child: Icon(Icons.add_a_photo),
+            )
+          : null,
     );
   }
 
