@@ -224,10 +224,63 @@ class _MyHomePageState extends State<MyHomePage>
               ),
               itemCount: _images.length,
               itemBuilder: (BuildContext context, int index) {
-                return Image.file(_images[index], fit: BoxFit.cover);
+                return GestureDetector(
+                  onTap: () {showImage(index);},
+                  child: Image.file(_images[index], fit: BoxFit.cover),
+                );
               },
             ),
           );
+  }
+
+  // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
+  void showImage(int index) {
+    File image = _images[index];
+    showDialog(context: context, builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.all(10),
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: () {Navigator.of(context).pop();},
+              child: Container(
+                color: Colors.black.withOpacity(0.2),
+                child: Center(child: Image.file(image),),
+              ),
+            ),
+            Positioned (
+              top: 10,
+              right: 10,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _images.removeAt(index);
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      'delete',
+                      style: TextStyle(
+                        color: Colors.deepPurple,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ),
+              ),
+              
+            ),
+          ],
+        ),
+      );
+    },);
   }
 }
 
