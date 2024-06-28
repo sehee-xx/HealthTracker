@@ -48,7 +48,6 @@ class _MyHomePageState extends State<MyHomePage>
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
-  // List of motivational quotes
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
     "지금이 가장 중요한 순간이다",
@@ -238,38 +237,38 @@ class _MyHomePageState extends State<MyHomePage>
           child: Stack(
             children: [
               GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.file(image),
-                      SizedBox(height: 10),
-                      Text(
-                        '${imageTuple.author}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                  color: Colors.black.withOpacity(0.2),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.file(image),
+                        SizedBox(height: 10),
+                        Text(
+                          '${imageTuple.author}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
+                        SizedBox(height: 5),
+                        Text(
+                          '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
               Positioned(
                 top: 10,
                 right: 10,
