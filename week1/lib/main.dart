@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math'; // Import the dart:math library for random number generation
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,7 @@ class ImageTuple {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,50 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const SplashScreen(), // 초기 화면으로 SplashScreen 사용
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 지연 후 페이지 이동
+    Timer(const Duration(seconds: 2), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MyHomePage()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            // CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              'Health Tracker',
+              style: TextStyle(
+                color: Colors.deepPurple, // 보라색 글씨
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
