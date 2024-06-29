@@ -608,7 +608,16 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
                 String updatedData = _dataController.text;
                 Navigator.pop(context, updatedData); // Pass updated data back
               },
-              child: Text('저장'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple, // 진한 보라색으로 변경
+              ),
+              child: Text(
+                '저장',
+                style: TextStyle(
+                  color: Colors.white, // 흰색 텍스트
+                  fontSize: 16.0,
+                ),
+              ),
             ),
             SizedBox(height: 16.0),
             Expanded(
