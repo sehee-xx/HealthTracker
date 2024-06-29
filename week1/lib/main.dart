@@ -7,9 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(const MyApp());
+  initializeDateFormatting('ko_KR', null).then((_) {
+    runApp(MyApp());
+  });
 }
 
 final Map<String, int> todayWorkout = {
@@ -22,7 +25,15 @@ final Map<String, int> todayWorkout = {
   '기타': 0,
 };
 
-final Map<String, int> workHistory = {};
+final Map<String, int> workHistory = {
+  '2024-06-19': 55,
+  '2024-06-20': 50,
+  '2024-06-23': 80,
+  '2024-06-24': 50,
+  '2024-06-25': 35,
+  '2024-06-27': 70,
+  '2024-06-28': 60,
+};
 
 class ImageTuple {
   final File image;
@@ -1103,6 +1114,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     });
   }
 
+  // 운동 추가 버튼
   Future<void> _showAddWorkoutDialog() async {
     String selectedType = '러닝';
     TextEditingController _durationController = TextEditingController();
@@ -1181,6 +1193,19 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
   }
 
+
+  void detailPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => WorkoutDetailsPage(todayWorkout)),
+    );
+  }
+
+  void showHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => WorkoutHistoryPage(workHistory)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalMinutes =
@@ -1216,7 +1241,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             totalMinutes > 0
                 ? Text('총 시간: $hours시간 $minutes분',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-                : Text('아직 운동을 하지 않았습니다.',
+                : Text('아직 운동을 시작하지 않았습니다.',
                     style: TextStyle(fontSize: 16, color: Colors.grey)),
             Wrap(
               spacing: 8,
@@ -1234,7 +1259,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: () {}, // TODO: Implement details view
+                  onPressed: detailPage,
                   child: const Text('세부 내용'),
                 ),
                 ElevatedButton(
@@ -1246,10 +1271,153 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: const Text('운동 추가'),
                 ),
                 ElevatedButton(
-                  onPressed: () {}, // TODO: Implement history view
+                  onPressed: showHistory,
                   child: const Text('히스토리'),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WorkoutDetailsPage extends StatelessWidget {
+  final Map<String, int> todayWorkout;
+
+  WorkoutDetailsPage(this.todayWorkout);
+
+  @override
+  Widget build(BuildContext context) {
+    List<MapEntry<String, int>> nonZeroWorkouts = todayWorkout.entries
+        .where((entry) => entry.value > 0)
+        .toList();
+    int totalCalories = nonZeroWorkouts.fold(0, (sum, entry) {
+      return sum + _calculateCalories(entry.key, entry.value);
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('오늘의 운동'),
+      ),
+      body: nonZeroWorkouts.isEmpty
+          ? Center(
+              child: const Text('아직 운동을 시작하지 않았습니다'),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: nonZeroWorkouts.length,
+                    itemBuilder: (context, index) {
+                      String type = nonZeroWorkouts[index].key;
+                      int duration = nonZeroWorkouts[index].value;
+                      int calories = _calculateCalories(type, duration); // 소모 칼로리 계산
+
+                      return ListTile(
+                        title: Text(type),
+                        subtitle: Text(
+                            '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    '총 소모 칼로리: ${totalCalories} kcal',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  int _calculateCalories(String type, int duration) {
+    if (type == '러닝') return duration * 10;
+    else if (type == '자전거 타기') return duration * 6;
+    else if (type == '수영') return duration * 13;
+    else if (type == '걷기') return duration * 5;
+    else if (type == '요가') return duration * 3;
+    else if (type == '웨이트') return duration * 6;
+    return duration * 5; // 기타
+  }
+}
+
+
+class WorkoutHistoryPage extends StatelessWidget {
+  final Map<String, int> workHistory;
+
+  WorkoutHistoryPage(this.workHistory);
+
+  @override
+  Widget build(BuildContext context) {
+    List<MapEntry<String, int>> sortedEntries = workHistory.entries.toList()
+      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+
+    int totalMinutesLastWeek = 0;
+    DateTime? lastDate;
+    int streak = 0;
+    int consecutiveDays = 0;
+
+    for (var entry in sortedEntries) {
+      DateTime date = DateTime.parse(entry.key);
+      if (date.isAfter(DateTime.now().subtract(Duration(days: 7)))) {
+        totalMinutesLastWeek += entry.value;
+      }
+      if (lastDate == null || lastDate.difference(date).inDays == 1) {
+        streak++;
+        lastDate = date;
+      } else if (lastDate.difference(date).inDays > 1) {
+        break;
+      }
+    }
+    consecutiveDays = streak;
+
+    int hoursLastWeek = totalMinutesLastWeek ~/ 60;
+    int minutesLastWeek = totalMinutesLastWeek % 60;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('운동 히스토리'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: sortedEntries.length,
+                itemBuilder: (context, index) {
+                  String dateStr = sortedEntries[index].key;
+                  int duration = sortedEntries[index].value;
+                  DateTime date = DateTime.parse(dateStr);
+                  String formattedDate = DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+
+                  return ListTile(
+                    title: Text(formattedDate),
+                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                  );
+                },
+              ),
+            ),
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    '$consecutiveDays일 연속 운동 완료!',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
