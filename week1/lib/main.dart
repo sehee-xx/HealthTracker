@@ -133,7 +133,8 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+        _images
+            .add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -143,7 +144,8 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+        _images
+            .add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -275,27 +277,27 @@ class _MyHomePageState extends State<MyHomePage>
             )
           : _tabController.index == 1
               ? Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Positioned(
-              bottom: 8,
-              right: 70,
-              child: FloatingActionButton(
-                onPressed: _pickImageCam,
-                child: const Icon(Icons.add_a_photo),
-              ),
-            ),
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: FloatingActionButton(
-                onPressed: _pickImageGal,
-                child: const Icon(Icons.photo_library),
-              ),
-            ),
-          ],
-        )
-      : null,
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Positioned(
+                      bottom: 8,
+                      right: 70,
+                      child: FloatingActionButton(
+                        onPressed: _pickImageCam,
+                        child: const Icon(Icons.add_a_photo),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: FloatingActionButton(
+                        onPressed: _pickImageGal,
+                        child: const Icon(Icons.photo_library),
+                      ),
+                    ),
+                  ],
+                )
+              : null,
     );
   }
 
@@ -359,8 +361,10 @@ class _MyHomePageState extends State<MyHomePage>
                           children: [
                             ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                maxHeight: MediaQuery.of(context).size.height * 0.5,
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.8,
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.5,
                               ),
                               child: Image.file(image, fit: BoxFit.contain),
                             ),
@@ -384,28 +388,33 @@ class _MyHomePageState extends State<MyHomePage>
                             const SizedBox(height: 10),
                             if (commentAdded)
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
                                 child: Column(
                                   children: [
                                     Text(
                                       imageTuple.comments,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                     ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.white),
+                                          icon: const Icon(Icons.edit,
+                                              color: Colors.white),
                                           onPressed: () {
                                             setState(() {
-                                              commentController.text = imageTuple.comments;
+                                              commentController.text =
+                                                  imageTuple.comments;
                                               commentAdded = false;
                                             });
                                           },
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.white),
+                                          icon: const Icon(Icons.delete,
+                                              color: Colors.white),
                                           onPressed: () {
                                             setState(() {
                                               commentController.text = '';
@@ -421,20 +430,25 @@ class _MyHomePageState extends State<MyHomePage>
                               ),
                             if (!commentAdded)
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20.0),
                                 child: Column(
                                   children: [
                                     TextField(
                                       controller: commentController,
-                                      style: const TextStyle(color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                       decoration: const InputDecoration(
                                         hintText: 'Enter your comment',
-                                        hintStyle: TextStyle(color: Colors.white54),
+                                        hintStyle:
+                                            TextStyle(color: Colors.white54),
                                         enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
                                         ),
                                       ),
                                       onTap: () {
@@ -445,7 +459,8 @@ class _MyHomePageState extends State<MyHomePage>
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
-                                          imageTuple.comments = commentController.text;
+                                          imageTuple.comments =
+                                              commentController.text;
                                           commentAdded = true;
                                         });
                                       },
@@ -472,7 +487,8 @@ class _MyHomePageState extends State<MyHomePage>
                             Navigator.of(context).pop();
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.8),
                               borderRadius: BorderRadius.circular(5),
