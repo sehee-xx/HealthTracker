@@ -275,170 +275,181 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-    ImageTuple imageTuple = _images[index];
-    File image = imageTuple.image;
-    TextEditingController commentController = TextEditingController();
-    bool commentAdded = imageTuple.comments.isNotEmpty;
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: Colors.transparent,
-              insetPadding: const EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Container(
-                  color: Colors.black.withOpacity(0.6),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.file(image, fit: BoxFit.cover),
-                            const SizedBox(height: 10),
-                            Text(
-                              '${imageTuple.author}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+  ImageTuple imageTuple = _images[index];
+  File image = imageTuple.image;
+  TextEditingController commentController = TextEditingController();
+  bool commentAdded = imageTuple.comments.isNotEmpty;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Container(
+                color: Colors.black.withOpacity(0.6),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                              maxHeight: MediaQuery.of(context).size.height * 0.5,
+                            ),
+                            child: Image.file(image, fit: BoxFit.contain),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${imageTuple.author}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (commentAdded)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    imageTuple.comments,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.white),
+                                        onPressed: () {
+                                          setState(() {
+                                            commentController.text = imageTuple.comments;
+                                            commentAdded = false;
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.white),
+                                        onPressed: () {
+                                          setState(() {
+                                            imageTuple.comments = '';
+                                            commentAdded = false;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                          if (!commentAdded)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    controller: commentController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter your comment',
+                                      hintStyle: TextStyle(color: Colors.white54),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      setState(() {});
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        imageTuple.comments = commentController.text;
+                                        commentAdded = true;
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.deepPurple,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    child: const Text('Add Comment'),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            if (commentAdded)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      imageTuple.comments,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.white),
-                                          onPressed: () {
-                                            setState(() {
-                                              commentController.text = imageTuple.comments;
-                                              commentAdded = false;
-                                            });
-                                          },
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.white),
-                                          onPressed: () {
-                                            setState(() {
-                                              imageTuple.comments = '';
-                                              commentAdded = false;
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (!commentAdded)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      controller: commentController,
-                                      style: const TextStyle(color: Colors.white),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Enter your comment',
-                                        hintStyle: TextStyle(color: Colors.white54),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          imageTuple.comments = commentController.text;
-                                          commentAdded = true;
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.deepPurple,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: const Text('Add Comment'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
+                        ],
                       ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _images.removeAt(index);
-                            });
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: const Text(
-                              'delete',
-                              style: TextStyle(
-                                color: Colors.deepPurple,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _images.removeAt(index);
+                          });
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: const Text(
+                            'delete',
+                            style: TextStyle(
+                              color: Colors.deepPurple,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                       ),
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: IconButton(
-                          icon: const Icon(Icons.undo, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-
+                    ),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: IconButton(
+                        icon: const Icon(Icons.undo, color: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+          );
+        },
+      );
+    },
+  ).then((_) {
+    // 다이얼로그가 닫힌 후에 상태를 갱신합니다.
+    setState(() {});
+  });
+}
 
 }
 
