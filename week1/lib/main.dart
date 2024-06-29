@@ -7,9 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(const MyApp());
+  initializeDateFormatting('ko_KR', null).then((_) {
+    runApp(MyApp());
+  });
 }
 
 final Map<String, int> todayWorkout = {
@@ -22,7 +25,15 @@ final Map<String, int> todayWorkout = {
   '기타': 0,
 };
 
-final Map<String, int> workHistory = {};
+final Map<String, int> workHistory = {
+  '2024-06-19': 55,
+  '2024-06-20': 50,
+  '2024-06-23': 80,
+  '2024-06-24': 50,
+  '2024-06-25': 35,
+  '2024-06-27': 70,
+  '2024-06-28': 60,
+};
 
 class ImageTuple {
   final File image;
@@ -739,6 +750,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              interval: 1,
               getTitlesWidget: (value, meta) {
                 TextStyle style = TextStyle(
                   color: Colors.black,
@@ -1294,7 +1306,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: () {}, // TODO: Implement details view
+                  onPressed: detailPage,
                   child: const Text('세부 내용'),
                 ),
                 ElevatedButton(
@@ -1306,7 +1318,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: const Text('운동 추가'),
                 ),
                 ElevatedButton(
-                  onPressed: () {}, // TODO: Implement history view
+                  onPressed: showHistory,
                   child: const Text('히스토리'),
                 ),
               ],
