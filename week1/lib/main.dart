@@ -7,9 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  runApp(const MyApp());
+  initializeDateFormatting('ko_KR', null).then((_) {
+    runApp(MyApp());
+  });
 }
 
 final Map<String, int> todayWorkout = {
@@ -23,11 +26,13 @@ final Map<String, int> todayWorkout = {
 };
 
 final Map<String, int> workHistory = {
-  '2024-06-24': 500,
-  '2024-06-25': 350,
-  '2024-06-26': 700,
-  '2024-06-27': 700,
-  '2024-06-28': 600,
+  '2024-06-19': 55,
+  '2024-06-20': 50,
+  '2024-06-23': 80,
+  '2024-06-24': 50,
+  '2024-06-25': 35,
+  '2024-06-27': 70,
+  '2024-06-28': 60,
 };
 
 class ImageTuple {
@@ -1173,7 +1178,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   void showHistory() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => WorkoutHistoryPage()),
+      MaterialPageRoute(builder: (context) => WorkoutHistoryPage(workHistory)),
     );
   }
 
@@ -1320,14 +1325,36 @@ class WorkoutDetailsPage extends StatelessWidget {
 
 
 class WorkoutHistoryPage extends StatelessWidget {
-  WorkoutHistoryPage();
+  final Map<String, int> workHistory;
+
+  WorkoutHistoryPage(this.workHistory);
+
   @override
   Widget build(BuildContext context) {
-    List<String> dates = workHistory.keys.toList()..sort();
-    List<FlSpot> spots = dates.asMap().entries.map((entry) {
-      DateTime date = DateTime.parse(entry.value);
-      return FlSpot(date.millisecondsSinceEpoch.toDouble(), workHistory[entry.value]!.toDouble());
-    }).toList();
+    List<MapEntry<String, int>> sortedEntries = workHistory.entries.toList()
+      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+
+    int totalMinutesLastWeek = 0;
+    DateTime? lastDate;
+    int streak = 0;
+    int consecutiveDays = 0;
+
+    for (var entry in sortedEntries) {
+      DateTime date = DateTime.parse(entry.key);
+      if (date.isAfter(DateTime.now().subtract(Duration(days: 7)))) {
+        totalMinutesLastWeek += entry.value;
+      }
+      if (lastDate == null || lastDate.difference(date).inDays == 1) {
+        streak++;
+        lastDate = date;
+      } else if (lastDate.difference(date).inDays > 1) {
+        break;
+      }
+    }
+    consecutiveDays = streak;
+
+    int hoursLastWeek = totalMinutesLastWeek ~/ 60;
+    int minutesLastWeek = totalMinutesLastWeek % 60;
 
     return Scaffold(
       appBar: AppBar(
@@ -1335,36 +1362,40 @@ class WorkoutHistoryPage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: LineChart(
-          LineChartData(
-            lineBarsData: [
-              LineChartBarData(
-                spots: spots,
-                isCurved: true,
-                barWidth: 4,
-                belowBarData: BarAreaData(show: false),
-              ),
-            ],
-            titlesData: FlTitlesData(
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(showTitles: true),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  getTitlesWidget: (value, meta) {
-                    DateTime date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                    return SideTitleWidget(
-                      axisSide: meta.axisSide,
-                      child: Text(DateFormat('MM-dd').format(date)),
-                    );
-                  },
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: sortedEntries.length,
+                itemBuilder: (context, index) {
+                  String dateStr = sortedEntries[index].key;
+                  int duration = sortedEntries[index].value;
+                  DateTime date = DateTime.parse(dateStr);
+                  String formattedDate = DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+
+                  return ListTile(
+                    title: Text(formattedDate),
+                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                  );
+                },
               ),
             ),
-            gridData: FlGridData(show: true),
-            borderData: FlBorderData(show: true),
-          ),
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    '$consecutiveDays일 연속 운동 완료!',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
