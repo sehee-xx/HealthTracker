@@ -284,7 +284,7 @@ class _MyHomePageState extends State<MyHomePage>
           // 운동 탭
           const HealthRecordWidget(),
           // // 케어 탭
-          HealthCareTab(),
+          CareTab(),
         ],
       ),
       floatingActionButton: _tabController.index == 0
@@ -546,8 +546,125 @@ class _MyHomePageState extends State<MyHomePage>
   }
 }
 
-class HealthCareTab extends StatelessWidget {
-  const HealthCareTab({Key? key}) : super(key: key);
+class _HealthDetailPageState extends State<HealthDetailPage> {
+  TextEditingController _dataController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _dataController.text =
+        widget.data; // Initialize text field with current data
+  }
+
+  @override
+  void dispose() {
+    _dataController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            TextField(
+              controller: _dataController,
+              decoration: InputDecoration(labelText: 'Update ${widget.title}'),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                // Update data and pop the page
+                setState(() {
+                  widget.data = _dataController.text;
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class HealthDetailPage extends StatefulWidget {
+  final String title;
+  String data;
+
+  HealthDetailPage({Key? key, required this.title, required this.data})
+      : super(key: key);
+
+  @override
+  _HealthDetailPageState createState() => _HealthDetailPageState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              _getIconForTitle(title),
+              size: 100,
+              color: Colors.deepPurple,
+            ),
+            SizedBox(height: 20),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              data,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForTitle(String title) {
+    switch (title) {
+      case '수면시간':
+        return Icons.nights_stay;
+      case '심박수':
+        return Icons.favorite;
+      case '칼로리':
+        return Icons.local_fire_department;
+      case '혈당':
+        return Icons.bloodtype;
+      case '걸음수':
+        return Icons.directions_walk;
+      case '체중':
+        return Icons.monitor_weight_outlined;
+      default:
+        return Icons.info;
+    }
+  }
+}
+
+class CareTab extends StatelessWidget {
+  const CareTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -625,15 +742,16 @@ class HealthCareTab extends StatelessWidget {
                 ),
               );
             },
-            child: buildHealthCard(title, data, icon, startColor, endColor),
+            child: buildHealthCard(
+                context, title, data, icon, startColor, endColor),
           );
         },
       ),
     );
   }
 
-  Widget buildHealthCard(String title, String data, IconData icon,
-      Color startColor, Color endColor) {
+  Widget buildHealthCard(BuildContext context, String title, String data,
+      IconData icon, Color startColor, Color endColor) {
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(
@@ -645,7 +763,12 @@ class HealthCareTab extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
           onTap: () {
-            // Handle tap event here if needed
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => HealthDetailPage(title: title, data: data),
+              ),
+            );
           },
           child: Container(
             decoration: BoxDecoration(
@@ -690,71 +813,6 @@ class HealthCareTab extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class HealthDetailPage extends StatelessWidget {
-  final String title;
-  final String data;
-
-  const HealthDetailPage({Key? key, required this.title, required this.data})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              _getIconForTitle(title),
-              size: 100,
-              color: Colors.deepPurple,
-            ),
-            SizedBox(height: 20),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              data,
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.deepPurple,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _getIconForTitle(String title) {
-    switch (title) {
-      case '수면시간':
-        return Icons.nights_stay;
-      case '심박수':
-        return Icons.favorite;
-      case '칼로리':
-        return Icons.local_fire_department;
-      case '혈당':
-        return Icons.bloodtype;
-      case '걸음수':
-        return Icons.directions_walk;
-      case '체중':
-        return Icons.monitor_weight_outlined;
-      default:
-        return Icons.info;
-    }
   }
 }
 
