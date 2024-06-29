@@ -546,6 +546,17 @@ class _MyHomePageState extends State<MyHomePage>
   }
 }
 
+class HealthDetailPage extends StatefulWidget {
+  final String title;
+  String data;
+
+  HealthDetailPage({Key? key, required this.title, required this.data})
+      : super(key: key);
+
+  @override
+  _HealthDetailPageState createState() => _HealthDetailPageState();
+}
+
 class _HealthDetailPageState extends State<HealthDetailPage> {
   TextEditingController _dataController = TextEditingController();
 
@@ -573,6 +584,21 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            Icon(
+              _getIconForTitle(widget.title),
+              size: 100,
+              color: Colors.deepPurple,
+            ),
+            SizedBox(height: 20),
+            Text(
+              widget.title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            SizedBox(height: 10),
             TextField(
               controller: _dataController,
               decoration: InputDecoration(labelText: 'Update ${widget.title}'),
@@ -581,61 +607,10 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ElevatedButton(
               onPressed: () {
                 // Update data and pop the page
-                setState(() {
-                  widget.data = _dataController.text;
-                });
-                Navigator.pop(context);
+                String updatedData = _dataController.text;
+                Navigator.pop(context, updatedData); // Pass updated data back
               },
               child: Text('Save'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HealthDetailPage extends StatefulWidget {
-  final String title;
-  String data;
-
-  HealthDetailPage({Key? key, required this.title, required this.data})
-      : super(key: key);
-
-  @override
-  _HealthDetailPageState createState() => _HealthDetailPageState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              _getIconForTitle(title),
-              size: 100,
-              color: Colors.deepPurple,
-            ),
-            SizedBox(height: 20),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              data,
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.deepPurple,
-              ),
             ),
           ],
         ),
@@ -663,8 +638,22 @@ class HealthDetailPage extends StatefulWidget {
   }
 }
 
-class CareTab extends StatelessWidget {
+class CareTab extends StatefulWidget {
   const CareTab({Key? key}) : super(key: key);
+
+  @override
+  _CareTabState createState() => _CareTabState();
+}
+
+class _CareTabState extends State<CareTab> {
+  List<String> dataItems = [
+    '8 hours',
+    '70 bpm',
+    '300 kcal',
+    '100 mg/dL',
+    '10000 steps',
+    '65 kg'
+  ]; // Initial data items
 
   @override
   Widget build(BuildContext context) {
@@ -679,7 +668,6 @@ class CareTab extends StatelessWidget {
         itemCount: 6,
         itemBuilder: (context, index) {
           String title = '';
-          String data = '';
           IconData icon = Icons.info;
           Color startColor = Colors.blue.shade200;
           Color endColor = Colors.blue.shade400;
@@ -687,71 +675,85 @@ class CareTab extends StatelessWidget {
           switch (index) {
             case 0:
               title = '수면시간';
-              data = '8 hours';
               icon = Icons.nights_stay;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             case 1:
               title = '심박수';
-              data = '70 bpm';
               icon = Icons.favorite;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             case 2:
               title = '칼로리';
-              data = '300 kcal';
               icon = Icons.local_fire_department;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             case 3:
               title = '혈당';
-              data = '100 mg/dL';
               icon = Icons.bloodtype;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             case 4:
               title = '걸음수';
-              data = '10000 steps';
               icon = Icons.directions_walk;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             case 5:
               title = '체중';
-              data = '65 kg';
               icon = Icons.monitor_weight_outlined;
               startColor = Colors.deepPurple.shade200;
               endColor = Colors.purple.shade400;
               break;
             default:
               title = '건강 데이터';
-              data = '';
               break;
           }
 
           return GestureDetector(
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              final updatedData = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => HealthDetailPage(title: title, data: data),
+                  builder: (_) =>
+                      HealthDetailPage(title: title, data: dataItems[index]),
                 ),
               );
+              if (updatedData != null) {
+                // Update data if it's not null
+                setState(() {
+                  dataItems[index] = updatedData;
+                });
+              }
             },
             child: buildHealthCard(
-                context, title, data, icon, startColor, endColor),
+              context,
+              title,
+              dataItems[index],
+              icon,
+              startColor,
+              endColor,
+              index, // Pass index to buildHealthCard
+            ),
           );
         },
       ),
     );
   }
 
-  Widget buildHealthCard(BuildContext context, String title, String data,
-      IconData icon, Color startColor, Color endColor) {
+  Widget buildHealthCard(
+    BuildContext context,
+    String title,
+    String data,
+    IconData icon,
+    Color startColor,
+    Color endColor,
+    int index, // Receive index here
+  ) {
     return Card(
       elevation: 4.0,
       shape: RoundedRectangleBorder(
@@ -762,13 +764,19 @@ class CareTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(15.0),
         child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            final updatedData = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => HealthDetailPage(title: title, data: data),
               ),
             );
+            if (updatedData != null) {
+              // Update data if it's not null
+              setState(() {
+                dataItems[index] = updatedData;
+              });
+            }
           },
           child: Container(
             decoration: BoxDecoration(
@@ -988,9 +996,6 @@ class HealthRecordWidget extends StatefulWidget {
   _HealthRecordWidgetState createState() => _HealthRecordWidgetState();
 }
 
-      
-
-
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
   void _addWorkout(String type, int duration) {
     setState(() {
@@ -1020,10 +1025,12 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                     isExpanded: true,
                     onChanged: (String? newValue) {
                       setState(() {
-                        _localSelectedType = newValue!; // StatefulBuilder의 setState
+                        _localSelectedType =
+                            newValue!; // StatefulBuilder의 setState
                       });
                     },
-                    items: todayWorkout.keys.map<DropdownMenuItem<String>>((String value) {
+                    items: todayWorkout.keys
+                        .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
                         child: Text(value),
@@ -1048,7 +1055,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               child: const Text('추가'),
               onPressed: () {
                 if (_durationController.text.isNotEmpty) {
-                  _addWorkout(_localSelectedType, int.parse(_durationController.text));
+                  _addWorkout(
+                      _localSelectedType, int.parse(_durationController.text));
                   Navigator.of(context).pop();
                 }
               },
@@ -1060,28 +1068,36 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
   }
 
   List<PieChartSectionData> _getSections() {
-    double totalDuration = todayWorkout.values.fold(0, (sum, element) => sum + element);
+    double totalDuration =
+        todayWorkout.values.fold(0, (sum, element) => sum + element);
     return todayWorkout.entries.map((entry) {
       return PieChartSectionData(
         value: (totalDuration > 0) ? (entry.value / totalDuration) * 100 : 0,
         title: '${(entry.value / totalDuration * 100).toStringAsFixed(1)}%',
-        color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length],
+        color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) %
+            Colors.primaries.length],
         radius: 60,
-        titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        titleStyle: const TextStyle(
+            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
       );
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    int totalMinutes = todayWorkout.values.fold(0, (sum, element) => sum + element);
+    int totalMinutes =
+        todayWorkout.values.fold(0, (sum, element) => sum + element);
     int hours = totalMinutes ~/ 60;
     int minutes = totalMinutes % 60;
 
-    List<Widget> legends = todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+    List<Widget> legends =
+        todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
       return Text(
         '${entry.key}: ${entry.value}분',
-        style: TextStyle(color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length]),
+        style: TextStyle(
+            color: Colors.primaries[
+                todayWorkout.keys.toList().indexOf(entry.key) %
+                    Colors.primaries.length]),
       );
     }).toList();
 
@@ -1100,8 +1116,10 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               ),
             ),
             totalMinutes > 0
-              ? Text('총 시간: $hours시간 $minutes분', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-              : Text('아직 운동을 하지 않았습니다.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                ? Text('총 시간: $hours시간 $minutes분',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+                : Text('아직 운동을 하지 않았습니다.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey)),
             Wrap(
               spacing: 8,
               runSpacing: 8,
