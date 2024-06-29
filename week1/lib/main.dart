@@ -11,7 +11,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class ImageTuple {
+class ImageTuple { // 이미지 클래스 (이미지 파일, 등록자, 등록시간, 코멘트)
   final File image;
   final String author;
   final DateTime timeStamp;
@@ -19,7 +19,6 @@ class ImageTuple {
 
   ImageTuple(this.image, this.author, this.timeStamp, this.comments);
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
