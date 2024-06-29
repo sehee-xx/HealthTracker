@@ -678,6 +678,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              interval: 1, // Ensure each point on x-axis is displayed
               getTitlesWidget: (value, meta) {
                 TextStyle style = TextStyle(
                   color: Colors.black,
@@ -707,8 +708,24 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
-              showTitles: false,
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                return Text(
+                  value.toString(),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                );
+              },
             ),
+          ),
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
           ),
         ),
         borderData: FlBorderData(
