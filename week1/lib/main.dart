@@ -287,7 +287,9 @@ class _MyHomePageState extends State<MyHomePage>
           CareTab(),
         ],
       ),
-      floatingActionButton: _tabController.index == 0
+    floatingActionButton: AnimatedSwitcher(
+      duration: const Duration(milliseconds: 600),
+      child: _tabController.index == 0
           ? FloatingActionButton(
               onPressed: () => _addOrEditContact(),
               tooltip: '연락처 추가',
@@ -316,6 +318,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ],
                 )
               : null,
+      ),
     );
   }
 
@@ -326,7 +329,7 @@ class _MyHomePageState extends State<MyHomePage>
               color: Colors.grey[200],
               child: Center(
                 child: Text(
-                  'No images added yet',
+                  '아직 추가된 이미지가 없습니다.',
                   style: TextStyle(color: Colors.grey[700], fontSize: 18),
                 ),
               ),
