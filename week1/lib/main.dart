@@ -726,7 +726,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   Future<void> _showAddWorkoutDialog() async {
     final TextEditingController _durationController = TextEditingController();
-    String selectedType = '러닝'; // Default type
+    String selectedType = '러닝';
     await showDialog(
       context: context,
       builder: (context) {
