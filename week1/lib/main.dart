@@ -287,37 +287,37 @@ class _MyHomePageState extends State<MyHomePage>
           CareTab(),
         ],
       ),
-    floatingActionButton: AnimatedSwitcher(
-      duration: const Duration(milliseconds: 600),
-      child: _tabController.index == 0
-          ? FloatingActionButton(
-              onPressed: () => _addOrEditContact(),
-              tooltip: '연락처 추가',
-              child: const Icon(Icons.add),
-            )
-          : _tabController.index == 1
-              ? Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    Positioned(
-                      bottom: 0,
-                      right: 65,
-                      child: FloatingActionButton(
-                        onPressed: _pickImageCam,
-                        child: const Icon(Icons.add_a_photo),
+      floatingActionButton: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        child: _tabController.index == 0
+            ? FloatingActionButton(
+                onPressed: () => _addOrEditContact(),
+                tooltip: '연락처 추가',
+                child: const Icon(Icons.add),
+              )
+            : _tabController.index == 1
+                ? Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      Positioned(
+                        bottom: 0,
+                        right: 65,
+                        child: FloatingActionButton(
+                          onPressed: _pickImageCam,
+                          child: const Icon(Icons.add_a_photo),
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: FloatingActionButton(
-                        onPressed: _pickImageGal,
-                        child: const Icon(Icons.photo_library),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: FloatingActionButton(
+                          onPressed: _pickImageGal,
+                          child: const Icon(Icons.photo_library),
+                        ),
                       ),
-                    ),
-                  ],
-                )
-              : null,
+                    ],
+                  )
+                : null,
       ),
     );
   }
@@ -577,6 +577,16 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<FlSpot> chartData = [
+      FlSpot(0, 5),
+      FlSpot(1, 4),
+      FlSpot(2, 3),
+      FlSpot(3, 5),
+      FlSpot(4, 6),
+      FlSpot(5, 4),
+      FlSpot(6, 7),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -612,19 +622,19 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
                 Navigator.pop(context, updatedData); // Pass updated data back
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple, // 진한 보라색으로 변경
+                backgroundColor: Colors.deepPurple,
               ),
               child: Text(
                 '저장',
                 style: TextStyle(
-                  color: Colors.white, // 흰색 텍스트
+                  color: Colors.white,
                   fontSize: 16.0,
                 ),
               ),
             ),
             SizedBox(height: 16.0),
             Expanded(
-              child: buildChart(), // Add the chart widget here
+              child: buildChart(chartData), // Build the chart with the data
             ),
           ],
         ),
@@ -651,57 +661,54 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     }
   }
 
-  Widget buildChart() {
-    // Example chart data (replace with actual data)
-    List<FlSpot> chartData = [
-      FlSpot(0, 5),
-      FlSpot(1, 4),
-      FlSpot(2, 3),
-      FlSpot(3, 5),
-      FlSpot(4, 6),
-    ];
-
+  Widget buildChart(List<FlSpot> chartData) {
     return LineChart(
       LineChartData(
         lineBarsData: [
           LineChartBarData(
             spots: chartData,
             isCurved: true,
-            color: Colors.deepPurple, // Specify line colors here
+            color: Colors.deepPurple, // Specify line color here
             barWidth: 4,
             isStrokeCapRound: true,
             belowBarData: BarAreaData(show: false),
           ),
         ],
         titlesData: FlTitlesData(
-          bottomTitles: FlTitles(
-            show: true,
-            reservedSize: 22,
-            getTextStyles: (value) => const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                TextStyle style = TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                );
+                switch (value.toInt()) {
+                  case 0:
+                    return Text('월', style: style);
+                  case 1:
+                    return Text('화', style: style);
+                  case 2:
+                    return Text('수', style: style);
+                  case 3:
+                    return Text('목', style: style);
+                  case 4:
+                    return Text('금', style: style);
+                  case 5:
+                    return Text('토', style: style);
+                  case 6:
+                    return Text('일', style: style);
+                  default:
+                    return Text('', style: style);
+                }
+              },
             ),
-            margin: 10,
-            getTitles: (value) {
-              switch (value.toInt()) {
-                case 0:
-                  return 'Day 1';
-                case 1:
-                  return 'Day 2';
-                case 2:
-                  return 'Day 3';
-                case 3:
-                  return 'Day 4';
-                case 4:
-                  return 'Day 5';
-                default:
-                  return '';
-              }
-            },
           ),
-          leftTitles: FlTitles(
-            show: false,
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: false,
+            ),
           ),
         ),
         borderData: FlBorderData(
