@@ -298,16 +298,16 @@ class _MyHomePageState extends State<MyHomePage>
                   alignment: Alignment.bottomRight,
                   children: [
                     Positioned(
-                      bottom: 8,
-                      right: 70,
+                      bottom: 0,
+                      right: 65,
                       child: FloatingActionButton(
                         onPressed: _pickImageCam,
                         child: const Icon(Icons.add_a_photo),
                       ),
                     ),
                     Positioned(
-                      bottom: 8,
-                      right: 8,
+                      bottom: 0,
+                      right: 0,
                       child: FloatingActionButton(
                         onPressed: _pickImageGal,
                         child: const Icon(Icons.photo_library),
