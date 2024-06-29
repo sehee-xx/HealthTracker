@@ -554,18 +554,20 @@ class _ContactInputDialogState extends State<ContactInputDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.contact != null ? '연락처 수정' : '연락처 추가'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(labelText: '이름'),
-          ),
-          TextField(
-            controller: _phoneController,
-            decoration: const InputDecoration(labelText: '전화번호'),
-          ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: '이름'),
+            ),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(labelText: '전화번호'),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
