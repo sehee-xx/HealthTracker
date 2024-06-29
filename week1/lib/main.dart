@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -20,7 +22,7 @@ class ImageTuple {
 
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,50 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // 지연 후 페이지 이동
+    Timer(const Duration(seconds: 2), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MyHomePage()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            // CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              'Health Tracker',
+              style: TextStyle(
+                color: Colors.deepPurple,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -48,6 +93,17 @@ class _MyHomePageState extends State<MyHomePage>
   List<ImageTuple> _images = [];
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
+
+
+  final List<String> quotes = [
+    "오늘 할 운동을 내일로 미루지 말자",
+    "지금이 가장 중요한 순간이다",
+    "매일 조금씩 더 나아지자",
+    "포기하지 마라",
+    "너 자신을 믿어라"
+  ];
+
+  String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
 
   @override
@@ -88,6 +144,14 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
+  void _showRandomQuote() {
+    final random = Random();
+    final randomIndex = random.nextInt(quotes.length);
+    setState(() {
+      currentQuote = quotes[randomIndex];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,9 +189,9 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             ListTile(
-              title: const Text("수지의 건강 기록"),
+              title: Text(currentQuote),
               onTap: () {
-                // Add your onTap logic here
+                _showRandomQuote();
               },
             ),
           ],
@@ -363,6 +427,7 @@ class _MyHomePageState extends State<MyHomePage>
                             Navigator.of(context).pop();
                           },
                         ),
+
                       ),
                     ],
                   ),
@@ -386,9 +451,7 @@ class ContactDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(name),
-      ),
+      appBar: AppBar(),
       body: Container(
         color: Colors.deepPurple[50], // 연한 보라색 배경색
         width: double.infinity, // 전체 너비 채우기
@@ -538,11 +601,11 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Add your onPressed code here!
+                // 추가해야 함
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple, // Button color
-                foregroundColor: Colors.white, // Text color
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
               ),
               child: const Text('자세한 정보 보기'),
             ),
