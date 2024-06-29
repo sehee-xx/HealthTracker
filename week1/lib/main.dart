@@ -15,9 +15,11 @@ class ImageTuple {
   final File image;
   final String author;
   final DateTime timeStamp;
+  String comments;
 
-  ImageTuple(this.image, this.author, this.timeStamp);
+  ImageTuple(this.image, this.author, this.timeStamp, this.comments);
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -92,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage>
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
+
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
     "지금이 가장 중요한 순간이다",
@@ -102,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
+
   @override
   void initState() {
     super.initState();
@@ -111,6 +115,8 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
   }
+
+  
 
   Future<void> _loadContacts() async {
     try {
@@ -133,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now()));
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -271,80 +277,169 @@ class _MyHomePageState extends State<MyHomePage>
   void showImage(int index) {
     ImageTuple imageTuple = _images[index];
     File image = imageTuple.image;
+    TextEditingController commentController = TextEditingController();
+    bool commentAdded = imageTuple.comments.isNotEmpty;
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.all(10),
-          child: Stack(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(10),
+              child: SingleChildScrollView(
                 child: Container(
-                  color: Colors.black.withOpacity(0.2),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.file(image),
-                        SizedBox(height: 10),
-                        Text(
-                          '${imageTuple.author}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  color: Colors.black.withOpacity(0.6),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.file(image, fit: BoxFit.cover),
+                            const SizedBox(height: 10),
+                            Text(
+                              '${imageTuple.author}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            if (commentAdded)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      imageTuple.comments,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, color: Colors.white),
+                                          onPressed: () {
+                                            setState(() {
+                                              commentController.text = imageTuple.comments;
+                                              commentAdded = false;
+                                            });
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.white),
+                                          onPressed: () {
+                                            setState(() {
+                                              imageTuple.comments = '';
+                                              commentAdded = false;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (!commentAdded)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                child: Column(
+                                  children: [
+                                    TextField(
+                                      controller: commentController,
+                                      style: const TextStyle(color: Colors.white),
+                                      decoration: const InputDecoration(
+                                        hintText: 'Enter your comment',
+                                        hintStyle: TextStyle(color: Colors.white54),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: Colors.white),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          imageTuple.comments = commentController.text;
+                                          commentAdded = true;
+                                        });
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.deepPurple,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('Add Comment'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          '${DateFormat('yyyy년 mm월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _images.removeAt(index);
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'delete',
-                      style: TextStyle(
-                        color: Colors.deepPurple,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _images.removeAt(index);
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: const Text(
+                              'delete',
+                              style: TextStyle(
+                                color: Colors.deepPurple,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: IconButton(
+                          icon: const Icon(Icons.undo, color: Colors.white),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
 }
 
 class ContactDetailPage extends StatelessWidget {
