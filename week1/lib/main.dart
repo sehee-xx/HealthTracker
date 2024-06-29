@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       setState(() {}); // Tab 변경 시 상태 업데이트
     });
@@ -201,6 +201,7 @@ class _MyHomePageState extends State<MyHomePage>
             Tab(text: 'Contact'),
             Tab(text: 'Image'),
             Tab(text: 'Health'),
+            Tab(text: 'Care'),
           ],
         ),
       ),
@@ -266,7 +267,8 @@ class _MyHomePageState extends State<MyHomePage>
             },
           ),
           imageGalleryTab(),
-          const HealthRecordWidget(),
+          const HealthRecordWidget(), // tab 3
+          const HealthRecordWidget(), // tab 4
         ],
       ),
       floatingActionButton: _tabController.index == 0
