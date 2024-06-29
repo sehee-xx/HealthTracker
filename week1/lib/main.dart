@@ -184,36 +184,6 @@ class _MyHomePageState extends State<MyHomePage>
     Navigator.of(context).pop();
   }
 
-  Widget buildHealthCard(String title, String value) {
-    return Card(
-      color: Colors.deepPurple[50],
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -578,14 +548,12 @@ class HealthCareTab extends StatelessWidget {
         ),
         itemCount: 6,
         itemBuilder: (context, index) {
-          // Placeholder data for each card (replace with actual data)
           String title = '';
           String data = '';
-          IconData icon = Icons.info; // Default icon
+          IconData icon = Icons.info;
           Color startColor = Colors.blue.shade200;
           Color endColor = Colors.blue.shade400;
 
-          // Determine appropriate data and icon based on index
           switch (index) {
             case 0:
               title = '수면시간';
@@ -635,7 +603,17 @@ class HealthCareTab extends StatelessWidget {
               break;
           }
 
-          return buildHealthCard(title, data, icon, startColor, endColor);
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HealthDetailPage(title: title, data: data),
+                ),
+              );
+            },
+            child: buildHealthCard(title, data, icon, startColor, endColor),
+          );
         },
       ),
     );
@@ -648,47 +626,122 @@ class HealthCareTab extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
-      child: Container(
-        decoration: BoxDecoration(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(15.0),
+        child: InkWell(
           borderRadius: BorderRadius.circular(15.0),
-          gradient: LinearGradient(
-            colors: [startColor, endColor],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Icon(
-                icon,
-                size: 48.0,
-                color: Colors.white,
+          onTap: () {
+            // Handle tap event here if needed
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15.0),
+              gradient: LinearGradient(
+                colors: [startColor, endColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(height: 16.0),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Icon(
+                    icon,
+                    size: 48.0,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 16.0),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  Text(
+                    data,
+                    style: const TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8.0),
-              Text(
-                data,
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class HealthDetailPage extends StatelessWidget {
+  final String title;
+  final String data;
+
+  const HealthDetailPage({Key? key, required this.title, required this.data})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              _getIconForTitle(title),
+              size: 100,
+              color: Colors.deepPurple,
+            ),
+            SizedBox(height: 20),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              data,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForTitle(String title) {
+    switch (title) {
+      case '수면시간':
+        return Icons.nights_stay;
+      case '심박수':
+        return Icons.favorite;
+      case '칼로리':
+        return Icons.local_fire_department;
+      case '혈당':
+        return Icons.bloodtype;
+      case '걸음수':
+        return Icons.directions_walk;
+      case '체중':
+        return Icons.monitor_weight_outlined;
+      default:
+        return Icons.info;
+    }
   }
 }
 
@@ -789,7 +842,7 @@ class ContactDetailPage extends StatelessWidget {
 
               if (updatedContact != null) {
                 onUpdate(updatedContact);
-                Navigator.of(context).pop(); // Pop the dialog
+                Navigator.of(context).pop();
               }
             },
           ),
