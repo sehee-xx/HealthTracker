@@ -673,41 +673,41 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             belowBarData: BarAreaData(show: false),
           ),
         ],
-        // titlesData: FlTitlesData(
-        //   bottomTitles: SideTitles(
-        //     showTitles: true,
-        //     reservedSize: 22,
-        //     getTextStyles: (value) => const TextStyle(
-        //       color: Colors.black,
-        //       fontWeight: FontWeight.bold,
-        //       fontSize: 14,
-        //     ),
-        //     margin: 10,
-        //     getTitles: (value) {
-        //       switch (value.toInt()) {
-        //         case 0:
-        //           return 'Day 1';
-        //         case 1:
-        //           return 'Day 2';
-        //         case 2:
-        //           return 'Day 3';
-        //         case 3:
-        //           return 'Day 4';
-        //         case 4:
-        //           return 'Day 5';
-        //         default:
-        //           return '';
-        //       }
-        //     },
-        //   ),
-        //   leftTitles: SideTitles(
-        //     showTitles: false,
-        //   ),
-        // ),
-        // borderData: FlBorderData(
-        //   show: true,
-        //   border: Border.all(color: Colors.black),
-        // ),
+        titlesData: FlTitlesData(
+          bottomTitles: FlTitles(
+            show: true,
+            reservedSize: 22,
+            getTextStyles: (value) => const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            margin: 10,
+            getTitles: (value) {
+              switch (value.toInt()) {
+                case 0:
+                  return 'Day 1';
+                case 1:
+                  return 'Day 2';
+                case 2:
+                  return 'Day 3';
+                case 3:
+                  return 'Day 4';
+                case 4:
+                  return 'Day 5';
+                default:
+                  return '';
+              }
+            },
+          ),
+          leftTitles: FlTitles(
+            show: false,
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.black),
+        ),
       ),
     );
   }
