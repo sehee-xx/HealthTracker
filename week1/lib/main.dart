@@ -184,6 +184,36 @@ class _MyHomePageState extends State<MyHomePage>
     Navigator.of(context).pop();
   }
 
+  Widget buildHealthCard(String title, String value) {
+    return Card(
+      color: Colors.deepPurple[50],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,9 +296,12 @@ class _MyHomePageState extends State<MyHomePage>
               );
             },
           ),
+          // 이미지 탭
           imageGalleryTab(),
-          const HealthRecordWidget(), // tab 3
-          const HealthRecordWidget(), // tab 4
+          // 운동 탭
+          const HealthRecordWidget(),
+          // // 케어 탭
+          HealthCareTab(),
         ],
       ),
       floatingActionButton: _tabController.index == 0
@@ -527,6 +560,135 @@ class _MyHomePageState extends State<MyHomePage>
     ).then((_) {
       setState(() {});
     });
+  }
+}
+
+class HealthCareTab extends StatelessWidget {
+  const HealthCareTab({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 8.0,
+        ),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          // Placeholder data for each card (replace with actual data)
+          String title = '';
+          String data = '';
+          IconData icon = Icons.info; // Default icon
+          Color startColor = Colors.blue.shade200;
+          Color endColor = Colors.blue.shade400;
+
+          // Determine appropriate data and icon based on index
+          switch (index) {
+            case 0:
+              title = '수면시간';
+              data = '8 hours';
+              icon = Icons.nights_stay;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            case 1:
+              title = '심박수';
+              data = '70 bpm';
+              icon = Icons.favorite;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            case 2:
+              title = '칼로리';
+              data = '300 kcal';
+              icon = Icons.local_fire_department;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            case 3:
+              title = '혈당';
+              data = '100 mg/dL';
+              icon = Icons.bloodtype;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            case 4:
+              title = '걸음수';
+              data = '10000 steps';
+              icon = Icons.directions_walk;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            case 5:
+              title = '체중';
+              data = '65 kg';
+              icon = Icons.monitor_weight_outlined;
+              startColor = Colors.deepPurple.shade200;
+              endColor = Colors.purple.shade400;
+              break;
+            default:
+              title = '건강 데이터';
+              data = '';
+              break;
+          }
+
+          return buildHealthCard(title, data, icon, startColor, endColor);
+        },
+      ),
+    );
+  }
+
+  Widget buildHealthCard(String title, String data, IconData icon,
+      Color startColor, Color endColor) {
+    return Card(
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.0),
+          gradient: LinearGradient(
+            colors: [startColor, endColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 48.0,
+                color: Colors.white,
+              ),
+              const SizedBox(height: 16.0),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                data,
+                style: const TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
