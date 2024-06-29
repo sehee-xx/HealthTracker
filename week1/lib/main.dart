@@ -572,19 +572,24 @@ class HealthDetailPage extends StatefulWidget {
 }
 
 class _HealthDetailPageState extends State<HealthDetailPage> {
-  late TextEditingController _dataController;
+  late TextEditingController _numericController;
+  late String unit;
   late List<FlSpot> chartData;
 
   @override
   void initState() {
     super.initState();
-    _dataController = TextEditingController(text: widget.data);
+    // Split the data into numeric and unit parts
+    List<String> dataParts = widget.data.split(' ');
+    String numericPart = dataParts[0];
+    unit = dataParts.length > 1 ? dataParts[1] : '';
+    _numericController = TextEditingController(text: numericPart);
     _updateChartData(); // Initialize chart data
   }
 
   @override
   void dispose() {
-    _dataController.dispose();
+    _numericController.dispose();
     super.dispose();
   }
 
@@ -593,8 +598,8 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
         1; // Get current day index (0 for Monday, ..., 6 for Sunday)
 
     // Example: Update chartData based on current day index
-    double numericData = double.tryParse(widget.data.split(' ')[0]) ??
-        0; // Parse data from "8 hours" to 8.0 (assuming the data format is "<value> <unit>")
+    double numericData =
+        double.tryParse(_numericController.text) ?? 0; // Parse numeric data
 
     chartData = [
       FlSpot(0, 5),
@@ -637,14 +642,33 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
               ),
             ),
             SizedBox(height: 10),
-            TextField(
-              controller: _dataController,
-              decoration: InputDecoration(labelText: 'Update ${widget.title}'),
+            Row(
+              children: [
+                // Numeric part of the data (editable)
+                Expanded(
+                  child: TextField(
+                    controller: _numericController,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        InputDecoration(labelText: 'Update ${widget.title}'),
+                  ),
+                ),
+                SizedBox(width: 10),
+                // Unit part of the data (non-editable)
+                Text(
+                  unit,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                String updatedData = _dataController.text;
+                String updatedData = '${_numericController.text} $unit';
                 Navigator.pop(context, updatedData); // Pass updated data back
               },
               style: ElevatedButton.styleFrom(
