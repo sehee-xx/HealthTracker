@@ -134,7 +134,17 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImageCam() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+      });
+    }
+  }
+
+  Future<void> _pickImageGal() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -229,13 +239,29 @@ class _MyHomePageState extends State<MyHomePage>
           HealthRecordWidget(),
         ],
       ),
-      floatingActionButton: _tabController.index == 1
-          ? FloatingActionButton(
-              onPressed: _pickImage,
-              tooltip: 'Pick Image',
-              child: const Icon(Icons.add_a_photo),
-            )
-          : null,
+    floatingActionButton: _tabController.index == 1
+      ? Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Positioned(
+              bottom: 8,
+              right: 70,
+              child: FloatingActionButton(
+                onPressed: _pickImageCam,
+                child: const Icon(Icons.add_a_photo),
+              ),
+            ),
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: FloatingActionButton(
+                onPressed: _pickImageGal,
+                child: const Icon(Icons.photo_library),
+              ),
+            ),
+          ],
+        )
+      : null,
     );
   }
 
@@ -348,6 +374,7 @@ class _MyHomePageState extends State<MyHomePage>
                                         icon: const Icon(Icons.delete, color: Colors.white),
                                         onPressed: () {
                                           setState(() {
+                                            commentController.text = '';
                                             imageTuple.comments = '';
                                             commentAdded = false;
                                           });
