@@ -583,23 +583,36 @@ class HealthDetailPage extends StatefulWidget {
 }
 
 class _HealthDetailPageState extends State<HealthDetailPage> {
-  late TextEditingController _dataController;
+  late TextEditingController _numericController;
+  late String unit;
+  late List<FlSpot> chartData;
 
   @override
   void initState() {
     super.initState();
-    _dataController = TextEditingController(text: widget.data);
+    // Split the data into numeric and unit parts
+    List<String> dataParts = widget.data.split(' ');
+    String numericPart = dataParts[0];
+    unit = dataParts.length > 1 ? dataParts[1] : '';
+    _numericController = TextEditingController(text: numericPart);
+    _updateChartData(); // Initialize chart data
   }
 
   @override
   void dispose() {
-    _dataController.dispose();
+    _numericController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    List<FlSpot> chartData = [
+  void _updateChartData() {
+    int currentDayIndex = DateTime.now().weekday -
+        1; // Get current day index (0 for Monday, ..., 6 for Sunday)
+
+    // Example: Update chartData based on current day index
+    double numericData =
+        double.tryParse(_numericController.text) ?? 0; // Parse numeric data
+
+    chartData = [
       FlSpot(0, 5),
       FlSpot(1, 4),
       FlSpot(2, 3),
@@ -609,6 +622,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
       FlSpot(6, 7),
     ];
 
+    // Update the value for the current day index
+    chartData[currentDayIndex] =
+        FlSpot(currentDayIndex.toDouble(), numericData);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -633,14 +653,33 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
               ),
             ),
             SizedBox(height: 10),
-            TextField(
-              controller: _dataController,
-              decoration: InputDecoration(labelText: 'Update ${widget.title}'),
+            Row(
+              children: [
+                // Numeric part of the data (editable)
+                Expanded(
+                  child: TextField(
+                    controller: _numericController,
+                    keyboardType: TextInputType.number,
+                    decoration:
+                        InputDecoration(labelText: 'Update ${widget.title}'),
+                  ),
+                ),
+                SizedBox(width: 10),
+                // Unit part of the data (non-editable)
+                Text(
+                  unit,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                String updatedData = _dataController.text;
+                String updatedData = '${_numericController.text} $unit';
                 Navigator.pop(context, updatedData); // Pass updated data back
               },
               style: ElevatedButton.styleFrom(
@@ -728,9 +767,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: false,
-            ),
+            sideTitles: SideTitles(showTitles: false), // Hide left side titles
+          ),
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false), // Hide right side titles
           ),
         ),
         borderData: FlBorderData(
@@ -1186,6 +1229,18 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
   }
 
+  void detailPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => WorkoutDetailsPage(todayWorkout)),
+    );
+  }
+
+  void showHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => WorkoutHistoryPage(workHistory)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalMinutes =
@@ -1255,6 +1310,154 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: const Text('히스토리'),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WorkoutDetailsPage extends StatelessWidget {
+  final Map<String, int> todayWorkout;
+
+  WorkoutDetailsPage(this.todayWorkout);
+
+  @override
+  Widget build(BuildContext context) {
+    List<MapEntry<String, int>> nonZeroWorkouts =
+        todayWorkout.entries.where((entry) => entry.value > 0).toList();
+    int totalCalories = nonZeroWorkouts.fold(0, (sum, entry) {
+      return sum + _calculateCalories(entry.key, entry.value);
+    });
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('오늘의 운동'),
+      ),
+      body: nonZeroWorkouts.isEmpty
+          ? Center(
+              child: const Text('아직 운동을 시작하지 않았습니다'),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: nonZeroWorkouts.length,
+                    itemBuilder: (context, index) {
+                      String type = nonZeroWorkouts[index].key;
+                      int duration = nonZeroWorkouts[index].value;
+                      int calories =
+                          _calculateCalories(type, duration); // 소모 칼로리 계산
+
+                      return ListTile(
+                        title: Text(type),
+                        subtitle: Text(
+                            '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    '총 소모 칼로리: ${totalCalories} kcal',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  int _calculateCalories(String type, int duration) {
+    if (type == '러닝')
+      return duration * 10;
+    else if (type == '자전거 타기')
+      return duration * 6;
+    else if (type == '수영')
+      return duration * 13;
+    else if (type == '걷기')
+      return duration * 5;
+    else if (type == '요가')
+      return duration * 3;
+    else if (type == '웨이트') return duration * 6;
+    return duration * 5; // 기타
+  }
+}
+
+class WorkoutHistoryPage extends StatelessWidget {
+  final Map<String, int> workHistory;
+
+  WorkoutHistoryPage(this.workHistory);
+
+  @override
+  Widget build(BuildContext context) {
+    List<MapEntry<String, int>> sortedEntries = workHistory.entries.toList()
+      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+
+    int totalMinutesLastWeek = 0;
+    DateTime? lastDate;
+    int streak = 0;
+    int consecutiveDays = 0;
+
+    for (var entry in sortedEntries) {
+      DateTime date = DateTime.parse(entry.key);
+      if (date.isAfter(DateTime.now().subtract(Duration(days: 7)))) {
+        totalMinutesLastWeek += entry.value;
+      }
+      if (lastDate == null || lastDate.difference(date).inDays == 1) {
+        streak++;
+        lastDate = date;
+      } else if (lastDate.difference(date).inDays > 1) {
+        break;
+      }
+    }
+    consecutiveDays = streak;
+
+    int hoursLastWeek = totalMinutesLastWeek ~/ 60;
+    int minutesLastWeek = totalMinutesLastWeek % 60;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('운동 히스토리'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: sortedEntries.length,
+                itemBuilder: (context, index) {
+                  String dateStr = sortedEntries[index].key;
+                  int duration = sortedEntries[index].value;
+                  DateTime date = DateTime.parse(dateStr);
+                  String formattedDate =
+                      DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+
+                  return ListTile(
+                    title: Text(formattedDate),
+                    subtitle:
+                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                  );
+                },
+              ),
+            ),
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    '$consecutiveDays일 연속 운동 완료!',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
