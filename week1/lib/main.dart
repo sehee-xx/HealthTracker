@@ -11,7 +11,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class ImageTuple {
+class ImageTuple { // 이미지 클래스 (이미지 파일, 등록자, 등록시간, 코멘트)
   final File image;
   final String author;
   final DateTime timeStamp;
@@ -128,7 +128,17 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImageCam() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+      });
+    }
+  }
+
+  Future<void> _pickImageGal() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -264,19 +274,29 @@ class _MyHomePageState extends State<MyHomePage>
           const HealthRecordWidget(),
         ],
       ),
-      floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton(
-              onPressed: () => _addOrEditContact(),
-              tooltip: '연락처 추가',
-              child: const Icon(Icons.add),
-            )
-          : _tabController.index == 1
-              ? FloatingActionButton(
-                  onPressed: _pickImage,
-                  tooltip: 'Pick Image',
-                  child: const Icon(Icons.add_a_photo),
-                )
-              : null,
+    floatingActionButton: _tabController.index == 1
+      ? Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Positioned(
+              bottom: 8,
+              right: 70,
+              child: FloatingActionButton(
+                onPressed: _pickImageCam,
+                child: const Icon(Icons.add_a_photo),
+              ),
+            ),
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: FloatingActionButton(
+                onPressed: _pickImageGal,
+                child: const Icon(Icons.photo_library),
+              ),
+            ),
+          ],
+        )
+      : null,
     );
   }
 
@@ -330,29 +350,99 @@ class _MyHomePageState extends State<MyHomePage>
           },
           child: Dialog(
             backgroundColor: Colors.transparent,
-            child: Stack(
-              children: [
-                InteractiveViewer(
-                  child: Image.file(image),
-                ),
-                Positioned(
-                  bottom: 16,
-                  right: 16,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Add Comment',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+            insetPadding: const EdgeInsets.all(10),
+            child: SingleChildScrollView(
+              child: Container(
+                color: Colors.black.withOpacity(0.6),
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.8,
+                              maxHeight: MediaQuery.of(context).size.height * 0.5,
+                            ),
+                            child: Image.file(image, fit: BoxFit.contain),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            '${imageTuple.author}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (commentAdded)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    imageTuple.comments,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, color: Colors.white),
+                                        onPressed: () {
+                                          setState(() {
+                                            commentController.text = imageTuple.comments;
+                                            commentAdded = false;
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, color: Colors.white),
+                                        onPressed: () {
+                                          setState(() {
+                                            commentController.text = '';
+                                            imageTuple.comments = '';
+                                            commentAdded = false;
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (!commentAdded)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                children: [
+                                  TextField(
+                                    controller: commentController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter your comment',
+                                      hintStyle: TextStyle(color: Colors.white54),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      setState(() {});
+                                    },
                                   ),
                                 ),
                                 const SizedBox(height: 8),
