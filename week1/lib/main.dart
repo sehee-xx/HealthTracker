@@ -12,6 +12,18 @@ void main() {
   runApp(const MyApp());
 }
 
+final Map<String, int> todayWorkout = {
+  '러닝': 0,
+  '걷기': 0,
+  '자전거 타기': 0,
+  '수영': 0,
+  '요가': 0,
+  '웨이트': 0,
+  '기타': 0,
+};
+
+final Map<String, int> workHistory = {};
+
 class ImageTuple {
   final File image;
   final String author;
@@ -703,19 +715,10 @@ class HealthRecordWidget extends StatefulWidget {
   _HealthRecordWidgetState createState() => _HealthRecordWidgetState();
 }
 
+      
+
+
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-  final Map<String, int> todayWorkout = {
-    '러닝': 0,
-    '걷기': 0,
-    '자전거 타기': 0,
-    '수영': 0,
-    '요가': 0,
-    '웨이트': 0,
-    '기타': 0,
-  };
-
-  final Map<String, int> workHistory = {};
-
   void _addWorkout(String type, int duration) {
     setState(() {
       todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
@@ -725,36 +728,43 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
   }
 
   Future<void> _showAddWorkoutDialog() async {
-    final TextEditingController _durationController = TextEditingController();
     String selectedType = '러닝';
+    TextEditingController _durationController = TextEditingController();
+    String _localSelectedType = selectedType; // 로컬 변수로 초기화
+
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('운동 추가'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: _durationController,
-                decoration: const InputDecoration(labelText: '시간 (분)'),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButton<String>(
-                value: selectedType,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedType = newValue!;
-                  });
-                },
-                items: todayWorkout.keys.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-            ],
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  DropdownButton<String>(
+                    value: _localSelectedType,
+                    isExpanded: true,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _localSelectedType = newValue!; // StatefulBuilder의 setState
+                      });
+                    },
+                    items: todayWorkout.keys.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  TextField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(labelText: '시간 (분)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              );
+            },
           ),
           actions: <Widget>[
             TextButton(
@@ -765,7 +775,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               child: const Text('추가'),
               onPressed: () {
                 if (_durationController.text.isNotEmpty) {
-                  _addWorkout(selectedType, int.parse(_durationController.text));
+                  _addWorkout(_localSelectedType, int.parse(_durationController.text));
                   Navigator.of(context).pop();
                 }
               },
@@ -781,9 +791,9 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     return todayWorkout.entries.map((entry) {
       return PieChartSectionData(
         value: (totalDuration > 0) ? (entry.value / totalDuration) * 100 : 0,
-        title: '${entry.key} ${(entry.value / totalDuration * 100).toStringAsFixed(1)}%',
+        title: '${(entry.value / totalDuration * 100).toStringAsFixed(1)}%',
         color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length],
-        radius: 50,
+        radius: 60,
         titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
       );
     }).toList();
@@ -791,37 +801,69 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: PieChart(
-              PieChartData(
-                sections: _getSections(),
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
+    int totalMinutes = todayWorkout.values.fold(0, (sum, element) => sum + element);
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
+
+    List<Widget> legends = todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+      return Text(
+        '${entry.key}: ${entry.value}분',
+        style: TextStyle(color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length]),
+      );
+    }).toList();
+
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: PieChart(
+                PieChartData(
+                  sections: _getSections(),
+                  sectionsSpace: 2,
+                  centerSpaceRadius: 70,
+                ),
               ),
             ),
-          ),
-          ButtonBar(
-            alignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: () {}, // TODO: Implement details view
-                child: const Text('세부 내용'),
+            totalMinutes > 0
+              ? Text('총 시간: $hours시간 $minutes분', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
+              : Text('아직 운동을 하지 않았습니다.', style: TextStyle(fontSize: 16, color: Colors.grey)),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: legends.take(3).toList(),
+            ),
+            if (legends.length > 3)
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: legends.skip(3).toList(),
               ),
-              ElevatedButton(
-                onPressed: _showAddWorkoutDialog,
-                child: const Text('운동 추가'),
-              ),
-              ElevatedButton(
-                onPressed: () {}, // TODO: Implement history view
-                child: const Text('히스토리'),
-              ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: () {}, // TODO: Implement details view
+                  child: const Text('세부 내용'),
+                ),
+                ElevatedButton(
+                  onPressed: _showAddWorkoutDialog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('운동 추가'),
+                ),
+                ElevatedButton(
+                  onPressed: () {}, // TODO: Implement history view
+                  child: const Text('히스토리'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
