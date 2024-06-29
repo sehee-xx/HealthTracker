@@ -7,12 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  initializeDateFormatting('ko_KR', null).then((_) {
-    runApp(MyApp());
-  });
+  runApp(const MyApp());
 }
 
 final Map<String, int> todayWorkout = {
@@ -25,15 +22,7 @@ final Map<String, int> todayWorkout = {
   '기타': 0,
 };
 
-final Map<String, int> workHistory = {
-  '2024-06-19': 55,
-  '2024-06-20': 50,
-  '2024-06-23': 80,
-  '2024-06-24': 50,
-  '2024-06-25': 35,
-  '2024-06-27': 70,
-  '2024-06-28': 60,
-};
+final Map<String, int> workHistory = {};
 
 class ImageTuple {
   final File image;
@@ -126,6 +115,8 @@ class _MyHomePageState extends State<MyHomePage>
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
+  bool showImageButtons = false;
+
   @override
   void initState() {
     super.initState();
@@ -134,6 +125,13 @@ class _MyHomePageState extends State<MyHomePage>
       setState(() {}); // Tab 변경 시 상태 업데이트
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
+  }
+
+
+  void toggleImageButtons() {
+    setState(() {
+      showImageButtons = !showImageButtons;
+    });
   }
 
   Future<void> _loadContacts() async {
@@ -298,39 +296,52 @@ class _MyHomePageState extends State<MyHomePage>
           CareTab(),
         ],
       ),
-      floatingActionButton: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 600),
-        child: _tabController.index == 0
-            ? FloatingActionButton(
-                onPressed: () => _addOrEditContact(),
-                tooltip: '연락처 추가',
-                child: const Icon(Icons.add),
-              )
-            : _tabController.index == 1
-                ? Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Positioned(
-                        bottom: 0,
-                        right: 65,
-                        child: FloatingActionButton(
-                          onPressed: _pickImageCam,
-                          child: const Icon(Icons.add_a_photo),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: FloatingActionButton(
-                          onPressed: _pickImageGal,
-                          child: const Icon(Icons.photo_library),
-                        ),
-                      ),
-                    ],
-                  )
-                : null,
-      ),
-    );
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton(
+              key: ValueKey<int>(0),
+              onPressed: () => _addOrEditContact(),
+              tooltip: '연락처 추가',
+              child: const Icon(Icons.add),
+            )
+          : _tabController.index == 1
+              ? Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: showImageButtons
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FloatingActionButton(
+                                  key: ValueKey<int>(1),
+                                  onPressed: _pickImageCam,
+                                  child: const Icon(Icons.add_a_photo),
+                                ),
+                                const SizedBox(height: 16),
+                                FloatingActionButton(
+                                  key: ValueKey<int>(2),
+                                  onPressed: _pickImageGal,
+                                  child: const Icon(Icons.photo_library),
+                                ),
+                                const SizedBox(height: 16),
+                                FloatingActionButton(
+                                  key: ValueKey<int>(3),
+                                  onPressed: toggleImageButtons,
+                                  child: const Icon(Icons.remove),
+                                ),
+                              ],
+                            )
+                          : FloatingActionButton(
+                              key: ValueKey<int>(4),
+                              onPressed: toggleImageButtons,
+                              child: const Icon(Icons.add),
+                            ),
+                    ),
+                  ],
+                )
+              : null,
+      );
   }
 
   Widget imageGalleryTab() {
@@ -728,7 +739,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 1, // Ensure each point on x-axis is displayed
               getTitlesWidget: (value, meta) {
                 TextStyle style = TextStyle(
                   color: Colors.black,
@@ -1141,7 +1151,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     });
   }
 
-  // 운동 추가 버튼
   Future<void> _showAddWorkoutDialog() async {
     String selectedType = '러닝';
     TextEditingController _durationController = TextEditingController();
@@ -1267,7 +1276,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             totalMinutes > 0
                 ? Text('총 시간: $hours시간 $minutes분',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-                : Text('아직 운동을 시작하지 않았습니다.',
+                : Text('아직 운동을 하지 않았습니다.',
                     style: TextStyle(fontSize: 16, color: Colors.grey)),
             Wrap(
               spacing: 8,
@@ -1285,7 +1294,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: detailPage,
+                  onPressed: () {}, // TODO: Implement details view
                   child: const Text('세부 내용'),
                 ),
                 ElevatedButton(
@@ -1297,7 +1306,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: const Text('운동 추가'),
                 ),
                 ElevatedButton(
-                  onPressed: showHistory,
+                  onPressed: () {}, // TODO: Implement history view
                   child: const Text('히스토리'),
                 ),
               ],
