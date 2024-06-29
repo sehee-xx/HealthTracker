@@ -548,7 +548,7 @@ class _MyHomePageState extends State<MyHomePage>
 
 class HealthDetailPage extends StatefulWidget {
   final String title;
-  String data;
+  final String data;
 
   HealthDetailPage({Key? key, required this.title, required this.data})
       : super(key: key);
@@ -558,13 +558,12 @@ class HealthDetailPage extends StatefulWidget {
 }
 
 class _HealthDetailPageState extends State<HealthDetailPage> {
-  TextEditingController _dataController = TextEditingController();
+  late TextEditingController _dataController;
 
   @override
   void initState() {
     super.initState();
-    _dataController.text =
-        widget.data; // Initialize text field with current data
+    _dataController = TextEditingController(text: widget.data);
   }
 
   @override
@@ -606,11 +605,14 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                // Update data and pop the page
                 String updatedData = _dataController.text;
                 Navigator.pop(context, updatedData); // Pass updated data back
               },
               child: Text('Save'),
+            ),
+            SizedBox(height: 16.0),
+            Expanded(
+              child: buildChart(), // Add the chart widget here
             ),
           ],
         ),
@@ -635,6 +637,67 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
       default:
         return Icons.info;
     }
+  }
+
+  Widget buildChart() {
+    // Example chart data (replace with actual data)
+    List<FlSpot> chartData = [
+      FlSpot(0, 5),
+      FlSpot(1, 4),
+      FlSpot(2, 3),
+      FlSpot(3, 5),
+      FlSpot(4, 6),
+    ];
+
+    return LineChart(
+      LineChartData(
+        lineBarsData: [
+          LineChartBarData(
+            spots: chartData,
+            isCurved: true,
+            color: Colors.deepPurple, // Specify line colors here
+            barWidth: 4,
+            isStrokeCapRound: true,
+            belowBarData: BarAreaData(show: false),
+          ),
+        ],
+        titlesData: FlTitlesData(
+          bottomTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 22,
+            getTextStyles: (value) => const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            margin: 10,
+            getTitles: (value) {
+              switch (value.toInt()) {
+                case 0:
+                  return 'Day 1';
+                case 1:
+                  return 'Day 2';
+                case 2:
+                  return 'Day 3';
+                case 3:
+                  return 'Day 4';
+                case 4:
+                  return 'Day 5';
+                default:
+                  return '';
+              }
+            },
+          ),
+          leftTitles: SideTitles(
+            showTitles: false,
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.black),
+        ),
+      ),
+    );
   }
 }
 
@@ -752,7 +815,7 @@ class _CareTabState extends State<CareTab> {
     IconData icon,
     Color startColor,
     Color endColor,
-    int index, // Receive index here
+    int index,
   ) {
     return Card(
       elevation: 4.0,
@@ -772,7 +835,6 @@ class _CareTabState extends State<CareTab> {
               ),
             );
             if (updatedData != null) {
-              // Update data if it's not null
               setState(() {
                 dataItems[index] = updatedData;
               });
