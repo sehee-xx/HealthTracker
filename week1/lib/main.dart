@@ -20,7 +20,6 @@ class ImageTuple {
   ImageTuple(this.image, this.author, this.timeStamp, this.comments);
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -63,7 +62,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[
-            // CircularProgressIndicator(),
             SizedBox(height: 20),
             Text(
               'Health Tracker',
@@ -94,7 +92,6 @@ class _MyHomePageState extends State<MyHomePage>
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
-
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
     "지금이 가장 중요한 순간이다",
@@ -105,7 +102,6 @@ class _MyHomePageState extends State<MyHomePage>
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
-
   @override
   void initState() {
     super.initState();
@@ -115,8 +111,6 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
   }
-
-  
 
   Future<void> _loadContacts() async {
     try {
@@ -139,7 +133,8 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+        _images
+            .add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -150,6 +145,40 @@ class _MyHomePageState extends State<MyHomePage>
     setState(() {
       currentQuote = quotes[randomIndex];
     });
+  }
+
+  Future<void> _addOrEditContact(
+      {Map<String, String>? contact, int? index}) async {
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return ContactInputDialog(contact: contact);
+            },
+          ),
+        );
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        if (index != null) {
+          contacts[index] = result;
+        } else {
+          contacts.add(result);
+        }
+      });
+      Navigator.pop(context, true); // 수정 후 상세 페이지로 돌아가 상태 업데이트를 트리거
+    }
+  }
+
+  void _deleteContact(int index) {
+    setState(() {
+      contacts.removeAt(index);
+    });
+    Navigator.of(context).pop();
   }
 
   @override
@@ -217,6 +246,12 @@ class _MyHomePageState extends State<MyHomePage>
                         builder: (context) => ContactDetailPage(
                           name: contacts[index]['name']!,
                           phone: contacts[index]['phone']!,
+                          onEdit: () async {
+                            // 연락처 수정 후 다시 현재 페이지로 이동하여 반영
+                            await _addOrEditContact(
+                                contact: contacts[index], index: index);
+                          },
+                          onDelete: () => _deleteContact(index),
                         ),
                       ),
                     );
@@ -226,16 +261,22 @@ class _MyHomePageState extends State<MyHomePage>
             },
           ),
           imageGalleryTab(),
-          HealthRecordWidget(),
+          const HealthRecordWidget(),
         ],
       ),
-      floatingActionButton: _tabController.index == 1
+      floatingActionButton: _tabController.index == 0
           ? FloatingActionButton(
-              onPressed: _pickImage,
-              tooltip: 'Pick Image',
-              child: const Icon(Icons.add_a_photo),
+              onPressed: () => _addOrEditContact(),
+              tooltip: '연락처 추가',
+              child: const Icon(Icons.add),
             )
-          : null,
+          : _tabController.index == 1
+              ? FloatingActionButton(
+                  onPressed: _pickImage,
+                  tooltip: 'Pick Image',
+                  child: const Icon(Icons.add_a_photo),
+                )
+              : null,
     );
   }
 
@@ -275,449 +316,145 @@ class _MyHomePageState extends State<MyHomePage>
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
-  ImageTuple imageTuple = _images[index];
-  File image = imageTuple.image;
-  TextEditingController commentController = TextEditingController();
-  bool commentAdded = imageTuple.comments.isNotEmpty;
+    ImageTuple imageTuple = _images[index];
+    File image = imageTuple.image;
+    TextEditingController commentController = TextEditingController();
+    bool commentAdded = imageTuple.comments.isNotEmpty;
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return Dialog(
+    showDialog(
+      context: context,
+      builder: (context) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(10),
-            child: SingleChildScrollView(
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.8,
-                              maxHeight: MediaQuery.of(context).size.height * 0.5,
-                            ),
-                            child: Image.file(image, fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '${imageTuple.author}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          if (commentAdded)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    imageTuple.comments,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.white),
-                                        onPressed: () {
-                                          setState(() {
-                                            commentController.text = imageTuple.comments;
-                                            commentAdded = false;
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.white),
-                                        onPressed: () {
-                                          setState(() {
-                                            imageTuple.comments = '';
-                                            commentAdded = false;
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (!commentAdded)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                children: [
-                                  TextField(
-                                    controller: commentController,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Enter your comment',
-                                      hintStyle: TextStyle(color: Colors.white54),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white),
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      setState(() {});
-                                    },
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        imageTuple.comments = commentController.text;
-                                        commentAdded = true;
-                                      });
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.deepPurple,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    child: const Text('Add Comment'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      right: 10,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _images.removeAt(index);
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: const Text(
-                            'delete',
-                            style: TextStyle(
-                              color: Colors.deepPurple,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: IconButton(
-                        icon: const Icon(Icons.undo, color: Colors.white),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ),
-                  ],
+            child: Stack(
+              children: [
+                InteractiveViewer(
+                  child: Image.file(image),
                 ),
-              ),
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Add Comment',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: commentController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Enter your comment',
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      imageTuple.comments =
+                                          commentController.text;
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Add'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    child: const Icon(Icons.add_comment),
+                  ),
+                ),
+                if (commentAdded)
+                  Positioned(
+                    bottom: 80,
+                    left: 16,
+                    child: Container(
+                      color: Colors.black54,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        imageTuple.comments,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          );
-        },
-      );
-    },
-  ).then((_) {
-    // 다이얼로그가 닫힌 후에 상태를 갱신합니다.
-    setState(() {});
-  });
-}
-
-}
-
-class ContactDetailPage extends StatelessWidget {
-  final String name;
-  final String phone;
-
-  const ContactDetailPage({required this.name, required this.phone});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Container(
-        color: Colors.deepPurple[50], // 연한 보라색 배경색
-        width: double.infinity, // 전체 너비 채우기
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // 주축 방향에서 가운데 정렬
-          crossAxisAlignment: CrossAxisAlignment.center, // 교차축 방향에서 가운데 정렬
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.deepPurple,
-              child: Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              name,
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              phone,
-              style: const TextStyle(fontSize: 20),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () async {
-                final url =
-                    'tel:${Uri.encodeFull(phone)}'; // tel: 프로토콜을 사용하여 전화 걸기
-                if (await canLaunch(url)) {
-                  await launch(url);
-                } else {
-                  throw 'Could not launch $url'; // URL을 열 수 없는 경우 예외 처리
-                }
-              },
-              icon: const Icon(Icons.phone),
-              label: const Text('전화하기'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
 
-class HealthRecordWidget extends StatefulWidget {
-  const HealthRecordWidget({super.key});
+class ContactInputDialog extends StatefulWidget {
+  final Map<String, String>? contact;
+
+  const ContactInputDialog({Key? key, this.contact}) : super(key: key);
 
   @override
-  _HealthRecordWidgetState createState() => _HealthRecordWidgetState();
+  _ContactInputDialogState createState() => _ContactInputDialogState();
 }
 
-class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-  int stepsCount = 8000;
-  double calorieBurned = 2500.0;
-  int heartRate = 75;
-
-  void updateSteps(int steps) {
-    setState(() {
-      stepsCount = steps;
-    });
-  }
-
-  void updateCalories(double calories) {
-    setState(() {
-      calorieBurned = calories;
-    });
-  }
-
-  void updateHeartRate(int rate) {
-    setState(() {
-      heartRate = rate;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16.0),
-            HealthItemCard(
-              icon: Icons.directions_walk,
-              title: '걸음수',
-              value: '$stepsCount',
-              unit: 'steps',
-              onPressed: () async {
-                final result = await showDialog<int>(
-                  context: context,
-                  builder: (context) {
-                    return NumberInputDialog(
-                      title: '걸음수 수정',
-                      initialValue: stepsCount,
-                    );
-                  },
-                );
-                if (result != null) updateSteps(result);
-              },
-            ),
-            HealthItemCard(
-              icon: Icons.local_fire_department,
-              title: '소모 칼로리',
-              value: '$calorieBurned',
-              unit: 'kcal',
-              onPressed: () async {
-                final result = await showDialog<double>(
-                  context: context,
-                  builder: (context) {
-                    return NumberInputDialog(
-                      title: '소모 칼로리 수정',
-                      initialValue: calorieBurned,
-                      isDouble: true,
-                    );
-                  },
-                );
-                if (result != null) updateCalories(result);
-              },
-            ),
-            HealthItemCard(
-              icon: Icons.favorite,
-              title: '심박수',
-              value: '$heartRate',
-              unit: 'bpm',
-              onPressed: () async {
-                final result = await showDialog<int>(
-                  context: context,
-                  builder: (context) {
-                    return NumberInputDialog(
-                      title: '심박수 수정',
-                      initialValue: heartRate,
-                    );
-                  },
-                );
-                if (result != null) updateHeartRate(result);
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // 추가해야 함
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('자세한 정보 보기'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HealthItemCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final String unit;
-  final VoidCallback onPressed;
-
-  const HealthItemCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.unit,
-    required this.onPressed,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.deepPurple),
-        title: Text('$title: $value $unit'),
-        trailing: IconButton(
-          icon: const Icon(Icons.edit, color: Colors.deepPurple),
-          onPressed: onPressed,
-        ),
-      ),
-    );
-  }
-}
-
-class NumberInputDialog extends StatefulWidget {
-  final String title;
-  final dynamic initialValue;
-  final bool isDouble;
-
-  const NumberInputDialog({
-    required this.title,
-    required this.initialValue,
-    this.isDouble = false,
-    super.key,
-  });
-
-  @override
-  _NumberInputDialogState createState() => _NumberInputDialogState();
-}
-
-class _NumberInputDialogState extends State<NumberInputDialog> {
-  late TextEditingController _controller;
+class _ContactInputDialogState extends State<ContactInputDialog> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: widget.isDouble
-          ? widget.initialValue.toString()
-          : widget.initialValue.toString(),
-    );
+    if (widget.contact != null) {
+      _nameController.text = widget.contact!['name']!;
+      _phoneController.text = widget.contact!['phone']!;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.title),
-      content: TextField(
-        controller: _controller,
-        keyboardType: widget.isDouble
-            ? TextInputType.numberWithOptions(decimal: true)
-            : TextInputType.number,
-        decoration: const InputDecoration(hintText: 'Enter value'),
+      title: Text(widget.contact != null ? '연락처 수정' : '연락처 추가'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(labelText: '이름'),
+          ),
+          TextField(
+            controller: _phoneController,
+            decoration: const InputDecoration(labelText: '전화번호'),
+          ),
+        ],
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('취소'),
         ),
         TextButton(
           onPressed: () {
-            if (widget.isDouble) {
-              final value = double.tryParse(_controller.text);
-              if (value != null) {
-                Navigator.of(context).pop(value);
-              }
-            } else {
-              final value = int.tryParse(_controller.text);
-              if (value != null) {
-                Navigator.of(context).pop(value);
-              }
+            final name = _nameController.text;
+            final phone = _phoneController.text;
+
+            if (name.isNotEmpty && phone.isNotEmpty) {
+              Navigator.of(context).pop({'name': name, 'phone': phone});
             }
           },
           child: const Text('저장'),
@@ -727,37 +464,223 @@ class _NumberInputDialogState extends State<NumberInputDialog> {
   }
 }
 
-class PhoneCallPage extends StatelessWidget {
-  const PhoneCallPage({super.key});
+class ContactDetailPage extends StatelessWidget {
+  final String name;
+  final String phone;
+  final Future<void> Function() onEdit;
+  final VoidCallback onDelete;
+
+  const ContactDetailPage({
+    Key? key,
+    required this.name,
+    required this.phone,
+    required this.onEdit,
+    required this.onDelete,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            color: Colors.deepPurple,
+            onPressed: () async {
+              await onEdit();
+              Navigator.pop(context, true); // 수정 후 현재 페이지로 돌아가 상태 업데이트를 트리거
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            color: Colors.deepPurple,
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('연락처 삭제'),
+                  content: const Text('연락처를 삭제하시겠습니까?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('취소'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        onDelete(); // 삭제 버튼 클릭 시 onDelete 콜백 호출
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(); // 다이얼로그 닫고 상세 페이지 닫기
+                      },
+                      child: const Text('확인'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '전화 연결 중입니다...',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.contact_emergency,
+                size: 80,
                 color: Colors.deepPurple,
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
+              SizedBox(height: 16),
+              Text(
+                '$name',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              child: const Text('전화 끊기'),
-            ),
-          ],
+              SizedBox(height: 8),
+              Text(
+                '$phone',
+                style: TextStyle(fontSize: 18),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => launchUrl(Uri.parse('tel:$phone')),
+                icon: const Icon(Icons.call),
+                label: const Text('전화걸기'),
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class HealthRecordWidget extends StatefulWidget {
+  const HealthRecordWidget({Key? key}) : super(key: key);
+
+  @override
+  _HealthRecordWidgetState createState() => _HealthRecordWidgetState();
+}
+
+class _HealthRecordWidgetState extends State<HealthRecordWidget> {
+  String _selectedDate = '';
+  String _selectedTime = '';
+  String _selectedExercise = '';
+  final List<Map<String, String>> _exerciseList = [];
+
+  final List<String> _exerciseOptions = [
+    '러닝',
+    '걷기',
+    '자전거 타기',
+    '수영',
+    '요가',
+    '웨이트 트레이닝',
+  ];
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked.format(context);
+      });
+    }
+  }
+
+  void _addExercise() {
+    if (_selectedDate.isNotEmpty &&
+        _selectedTime.isNotEmpty &&
+        _selectedExercise.isNotEmpty) {
+      setState(() {
+        _exerciseList.add({
+          'date': _selectedDate,
+          'time': _selectedTime,
+          'exercise': _selectedExercise,
+        });
+        _selectedDate = '';
+        _selectedTime = '';
+        _selectedExercise = '';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '운동 기록',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => _selectDate(context),
+            child: Text(_selectedDate.isEmpty ? '날짜 선택' : '날짜: $_selectedDate'),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => _selectTime(context),
+            child: Text(_selectedTime.isEmpty ? '시간 선택' : '시간: $_selectedTime'),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: _selectedExercise.isEmpty ? null : _selectedExercise,
+            hint: const Text('운동 선택'),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedExercise = newValue!;
+              });
+            },
+            items:
+                _exerciseOptions.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _addExercise,
+            child: const Text('운동 추가'),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _exerciseList.length,
+              itemBuilder: (context, index) {
+                final exercise = _exerciseList[index];
+                return ListTile(
+                  title: Text('${exercise['date']} ${exercise['time']}'),
+                  subtitle: Text(exercise['exercise']!),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
