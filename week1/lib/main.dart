@@ -573,11 +573,13 @@ class HealthDetailPage extends StatefulWidget {
 
 class _HealthDetailPageState extends State<HealthDetailPage> {
   late TextEditingController _dataController;
+  late List<FlSpot> chartData;
 
   @override
   void initState() {
     super.initState();
     _dataController = TextEditingController(text: widget.data);
+    _updateChartData(); // Initialize chart data
   }
 
   @override
@@ -586,9 +588,15 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    List<FlSpot> chartData = [
+  void _updateChartData() {
+    int currentDayIndex = DateTime.now().weekday -
+        1; // Get current day index (0 for Monday, ..., 6 for Sunday)
+
+    // Example: Update chartData based on current day index
+    double numericData = double.tryParse(widget.data.split(' ')[0]) ??
+        0; // Parse data from "8 hours" to 8.0 (assuming the data format is "<value> <unit>")
+
+    chartData = [
       FlSpot(0, 5),
       FlSpot(1, 4),
       FlSpot(2, 3),
@@ -598,6 +606,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
       FlSpot(6, 7),
     ];
 
+    // Update the value for the current day index
+    chartData[currentDayIndex] =
+        FlSpot(currentDayIndex.toDouble(), numericData);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -718,25 +733,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  value.toString(),
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                );
-              },
-            ),
+            showTitles: false, // Hide left side titles
           ),
           topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+            showTitles: false, // Hide right side titles
           ),
         ),
         borderData: FlBorderData(
