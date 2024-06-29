@@ -733,13 +733,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            showTitles: false, // Hide left side titles
+            sideTitles: SideTitles(showTitles: false), // Hide left side titles
           ),
           topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: AxisTitles(
-            showTitles: false, // Hide right side titles
+            sideTitles: SideTitles(showTitles: false), // Hide right side titles
           ),
         ),
         borderData: FlBorderData(
@@ -1196,7 +1196,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
   }
 
-
   void detailPage() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => WorkoutDetailsPage(todayWorkout)),
@@ -1293,9 +1292,8 @@ class WorkoutDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<MapEntry<String, int>> nonZeroWorkouts = todayWorkout.entries
-        .where((entry) => entry.value > 0)
-        .toList();
+    List<MapEntry<String, int>> nonZeroWorkouts =
+        todayWorkout.entries.where((entry) => entry.value > 0).toList();
     int totalCalories = nonZeroWorkouts.fold(0, (sum, entry) {
       return sum + _calculateCalories(entry.key, entry.value);
     });
@@ -1316,7 +1314,8 @@ class WorkoutDetailsPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       String type = nonZeroWorkouts[index].key;
                       int duration = nonZeroWorkouts[index].value;
-                      int calories = _calculateCalories(type, duration); // 소모 칼로리 계산
+                      int calories =
+                          _calculateCalories(type, duration); // 소모 칼로리 계산
 
                       return ListTile(
                         title: Text(type),
@@ -1330,8 +1329,7 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -1340,16 +1338,20 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 
   int _calculateCalories(String type, int duration) {
-    if (type == '러닝') return duration * 10;
-    else if (type == '자전거 타기') return duration * 6;
-    else if (type == '수영') return duration * 13;
-    else if (type == '걷기') return duration * 5;
-    else if (type == '요가') return duration * 3;
+    if (type == '러닝')
+      return duration * 10;
+    else if (type == '자전거 타기')
+      return duration * 6;
+    else if (type == '수영')
+      return duration * 13;
+    else if (type == '걷기')
+      return duration * 5;
+    else if (type == '요가')
+      return duration * 3;
     else if (type == '웨이트') return duration * 6;
     return duration * 5; // 기타
   }
 }
-
 
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
@@ -1399,11 +1401,13 @@ class WorkoutHistoryPage extends StatelessWidget {
                   String dateStr = sortedEntries[index].key;
                   int duration = sortedEntries[index].value;
                   DateTime date = DateTime.parse(dateStr);
-                  String formattedDate = DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+                  String formattedDate =
+                      DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
                   return ListTile(
                     title: Text(formattedDate),
-                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    subtitle:
+                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
                   );
                 },
               ),
