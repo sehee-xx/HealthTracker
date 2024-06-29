@@ -11,7 +11,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class ImageTuple { // 이미지 클래스 (이미지 파일, 등록자, 등록시간, 코멘트)
+class ImageTuple {
   final File image;
   final String author;
   final DateTime timeStamp;
@@ -128,17 +128,7 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  Future<void> _pickImageCam() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile != null) {
-      setState(() {
-        _images.add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
-      });
-    }
-  }
-
-  Future<void> _pickImageGal() async {
+  Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
@@ -157,18 +147,11 @@ class _MyHomePageState extends State<MyHomePage>
     });
   }
 
-  Future<void> _addOrEditContact(
-      {Map<String, String>? contact, int? index}) async {
+  void _addOrEditContact({Map<String, String>? contact, int? index}) async {
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) {
-        return Dialog(
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return ContactInputDialog(contact: contact);
-            },
-          ),
-        );
+        return ContactInputDialog(contact: contact);
       },
     );
 
@@ -180,7 +163,6 @@ class _MyHomePageState extends State<MyHomePage>
           contacts.add(result);
         }
       });
-      Navigator.pop(context, true); // 수정 후 상세 페이지로 돌아가 상태 업데이트를 트리거
     }
   }
 
@@ -256,11 +238,8 @@ class _MyHomePageState extends State<MyHomePage>
                         builder: (context) => ContactDetailPage(
                           name: contacts[index]['name']!,
                           phone: contacts[index]['phone']!,
-                          onEdit: () async {
-                            // 연락처 수정 후 다시 현재 페이지로 이동하여 반영
-                            await _addOrEditContact(
-                                contact: contacts[index], index: index);
-                          },
+                          onEdit: () => _addOrEditContact(
+                              contact: contacts[index], index: index),
                           onDelete: () => _deleteContact(index),
                         ),
                       ),
@@ -274,29 +253,19 @@ class _MyHomePageState extends State<MyHomePage>
           const HealthRecordWidget(),
         ],
       ),
-    floatingActionButton: _tabController.index == 1
-      ? Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            Positioned(
-              bottom: 8,
-              right: 70,
-              child: FloatingActionButton(
-                onPressed: _pickImageCam,
-                child: const Icon(Icons.add_a_photo),
-              ),
-            ),
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: FloatingActionButton(
-                onPressed: _pickImageGal,
-                child: const Icon(Icons.photo_library),
-              ),
-            ),
-          ],
-        )
-      : null,
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton(
+              onPressed: () => _addOrEditContact(),
+              tooltip: '연락처 추가',
+              child: const Icon(Icons.add),
+            )
+          : _tabController.index == 1
+              ? FloatingActionButton(
+                  onPressed: _pickImage,
+                  tooltip: 'Pick Image',
+                  child: const Icon(Icons.add_a_photo),
+                )
+              : null,
     );
   }
 
@@ -350,99 +319,29 @@ class _MyHomePageState extends State<MyHomePage>
           },
           child: Dialog(
             backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(10),
-            child: SingleChildScrollView(
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.8,
-                              maxHeight: MediaQuery.of(context).size.height * 0.5,
-                            ),
-                            child: Image.file(image, fit: BoxFit.contain),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            '${imageTuple.author}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          if (commentAdded)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    imageTuple.comments,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.white),
-                                        onPressed: () {
-                                          setState(() {
-                                            commentController.text = imageTuple.comments;
-                                            commentAdded = false;
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.white),
-                                        onPressed: () {
-                                          setState(() {
-                                            commentController.text = '';
-                                            imageTuple.comments = '';
-                                            commentAdded = false;
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (!commentAdded)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                children: [
-                                  TextField(
-                                    controller: commentController,
-                                    style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Enter your comment',
-                                      hintStyle: TextStyle(color: Colors.white54),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.white),
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      setState(() {});
-                                    },
+            child: Stack(
+              children: [
+                InteractiveViewer(
+                  child: Image.file(image),
+                ),
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Add Comment',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -557,7 +456,7 @@ class _ContactInputDialogState extends State<ContactInputDialog> {
 class ContactDetailPage extends StatelessWidget {
   final String name;
   final String phone;
-  final Future<void> Function() onEdit;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const ContactDetailPage({
@@ -576,10 +475,7 @@ class ContactDetailPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             color: Colors.deepPurple,
-            onPressed: () async {
-              await onEdit();
-              Navigator.pop(context, true); // 수정 후 현재 페이지로 돌아가 상태 업데이트를 트리거
-            },
+            onPressed: onEdit,
           ),
           IconButton(
             icon: const Icon(Icons.delete),
@@ -597,9 +493,8 @@ class ContactDetailPage extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        onDelete(); // 삭제 버튼 클릭 시 onDelete 콜백 호출
+                        onDelete();
                         Navigator.of(context).pop();
-                        Navigator.of(context).pop(); // 다이얼로그 닫고 상세 페이지 닫기
                       },
                       child: const Text('확인'),
                     ),
