@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MyApp());
@@ -250,6 +251,11 @@ class _MyHomePageState extends State<MyHomePage>
                           onEdit: () => _addOrEditContact(
                               contact: contacts[index], index: index),
                           onDelete: () => _deleteContact(index),
+                          onUpdate: (updatedContact) {
+                            setState(() {
+                              contacts[index] = updatedContact;
+                            });
+                          },
                         ),
                       ),
                     );
@@ -566,6 +572,7 @@ class ContactDetailPage extends StatelessWidget {
   final String phone;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final ValueChanged<Map<String, String>> onUpdate;
 
   const ContactDetailPage({
     Key? key,
@@ -573,6 +580,7 @@ class ContactDetailPage extends StatelessWidget {
     required this.phone,
     required this.onEdit,
     required this.onDelete,
+    required this.onUpdate,
   }) : super(key: key);
 
   @override
@@ -583,7 +591,20 @@ class ContactDetailPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit),
             color: Colors.deepPurple,
-            onPressed: onEdit,
+            onPressed: () async {
+              final updatedContact = await showDialog<Map<String, String>>(
+                context: context,
+                builder: (context) {
+                  return ContactInputDialog(
+                      contact: {'name': name, 'phone': phone});
+                },
+              );
+
+              if (updatedContact != null) {
+                onUpdate(updatedContact);
+                Navigator.of(context).pop(); // Pop the dialog
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
