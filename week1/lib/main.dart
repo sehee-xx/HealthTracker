@@ -7,12 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 void main() {
-  initializeDateFormatting('ko_KR', null).then((_) {
-    runApp(MyApp());
-  });
+  runApp(const MyApp());
 }
 
 final Map<String, int> todayWorkout = {
@@ -25,15 +22,7 @@ final Map<String, int> todayWorkout = {
   '기타': 0,
 };
 
-final Map<String, int> workHistory = {
-  '2024-06-19': 55,
-  '2024-06-20': 50,
-  '2024-06-23': 80,
-  '2024-06-24': 50,
-  '2024-06-25': 35,
-  '2024-06-27': 70,
-  '2024-06-28': 60,
-};
+final Map<String, int> workHistory = {};
 
 class ImageTuple {
   final File image;
@@ -126,6 +115,8 @@ class _MyHomePageState extends State<MyHomePage>
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
+  bool showImageButtons = false;
+
   @override
   void initState() {
     super.initState();
@@ -134,6 +125,13 @@ class _MyHomePageState extends State<MyHomePage>
       setState(() {}); // Tab 변경 시 상태 업데이트
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
+  }
+
+
+  void toggleImageButtons() {
+    setState(() {
+      showImageButtons = !showImageButtons;
+    });
   }
 
   Future<void> _loadContacts() async {
@@ -298,39 +296,52 @@ class _MyHomePageState extends State<MyHomePage>
           CareTab(),
         ],
       ),
-      floatingActionButton: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 600),
-        child: _tabController.index == 0
-            ? FloatingActionButton(
-                onPressed: () => _addOrEditContact(),
-                tooltip: '연락처 추가',
-                child: const Icon(Icons.add),
-              )
-            : _tabController.index == 1
-                ? Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      Positioned(
-                        bottom: 0,
-                        right: 65,
-                        child: FloatingActionButton(
-                          onPressed: _pickImageCam,
-                          child: const Icon(Icons.add_a_photo),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: FloatingActionButton(
-                          onPressed: _pickImageGal,
-                          child: const Icon(Icons.photo_library),
-                        ),
-                      ),
-                    ],
-                  )
-                : null,
-      ),
-    );
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton(
+              key: ValueKey<int>(0),
+              onPressed: () => _addOrEditContact(),
+              tooltip: '연락처 추가',
+              child: const Icon(Icons.add),
+            )
+          : _tabController.index == 1
+              ? Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: showImageButtons
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FloatingActionButton(
+                                  key: ValueKey<int>(1),
+                                  onPressed: _pickImageCam,
+                                  child: const Icon(Icons.add_a_photo),
+                                ),
+                                const SizedBox(height: 16),
+                                FloatingActionButton(
+                                  key: ValueKey<int>(2),
+                                  onPressed: _pickImageGal,
+                                  child: const Icon(Icons.photo_library),
+                                ),
+                                const SizedBox(height: 16),
+                                FloatingActionButton(
+                                  key: ValueKey<int>(3),
+                                  onPressed: toggleImageButtons,
+                                  child: const Icon(Icons.remove),
+                                ),
+                              ],
+                            )
+                          : FloatingActionButton(
+                              key: ValueKey<int>(4),
+                              onPressed: toggleImageButtons,
+                              child: const Icon(Icons.add),
+                            ),
+                    ),
+                  ],
+                )
+              : null,
+      );
   }
 
   Widget imageGalleryTab() {
@@ -689,7 +700,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              interval: 1, // Ensure each point on x-axis is displayed
               getTitlesWidget: (value, meta) {
                 TextStyle style = TextStyle(
                   color: Colors.black,
@@ -719,24 +729,8 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           ),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  value.toString(),
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                );
-              },
+              showTitles: false,
             ),
-          ),
-          topTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
           ),
         ),
         borderData: FlBorderData(
@@ -1114,7 +1108,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     });
   }
 
-  // 운동 추가 버튼
   Future<void> _showAddWorkoutDialog() async {
     String selectedType = '러닝';
     TextEditingController _durationController = TextEditingController();
@@ -1193,19 +1186,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
   }
 
-
-  void detailPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => WorkoutDetailsPage(todayWorkout)),
-    );
-  }
-
-  void showHistory() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => WorkoutHistoryPage(workHistory)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     int totalMinutes =
@@ -1241,7 +1221,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             totalMinutes > 0
                 ? Text('총 시간: $hours시간 $minutes분',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-                : Text('아직 운동을 시작하지 않았습니다.',
+                : Text('아직 운동을 하지 않았습니다.',
                     style: TextStyle(fontSize: 16, color: Colors.grey)),
             Wrap(
               spacing: 8,
@@ -1259,7 +1239,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 ElevatedButton(
-                  onPressed: detailPage,
+                  onPressed: () {}, // TODO: Implement details view
                   child: const Text('세부 내용'),
                 ),
                 ElevatedButton(
@@ -1271,153 +1251,10 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: const Text('운동 추가'),
                 ),
                 ElevatedButton(
-                  onPressed: showHistory,
+                  onPressed: () {}, // TODO: Implement history view
                   child: const Text('히스토리'),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class WorkoutDetailsPage extends StatelessWidget {
-  final Map<String, int> todayWorkout;
-
-  WorkoutDetailsPage(this.todayWorkout);
-
-  @override
-  Widget build(BuildContext context) {
-    List<MapEntry<String, int>> nonZeroWorkouts = todayWorkout.entries
-        .where((entry) => entry.value > 0)
-        .toList();
-    int totalCalories = nonZeroWorkouts.fold(0, (sum, entry) {
-      return sum + _calculateCalories(entry.key, entry.value);
-    });
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('오늘의 운동'),
-      ),
-      body: nonZeroWorkouts.isEmpty
-          ? Center(
-              child: const Text('아직 운동을 시작하지 않았습니다'),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: nonZeroWorkouts.length,
-                    itemBuilder: (context, index) {
-                      String type = nonZeroWorkouts[index].key;
-                      int duration = nonZeroWorkouts[index].value;
-                      int calories = _calculateCalories(type, duration); // 소모 칼로리 계산
-
-                      return ListTile(
-                        title: Text(type),
-                        subtitle: Text(
-                            '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  int _calculateCalories(String type, int duration) {
-    if (type == '러닝') return duration * 10;
-    else if (type == '자전거 타기') return duration * 6;
-    else if (type == '수영') return duration * 13;
-    else if (type == '걷기') return duration * 5;
-    else if (type == '요가') return duration * 3;
-    else if (type == '웨이트') return duration * 6;
-    return duration * 5; // 기타
-  }
-}
-
-
-class WorkoutHistoryPage extends StatelessWidget {
-  final Map<String, int> workHistory;
-
-  WorkoutHistoryPage(this.workHistory);
-
-  @override
-  Widget build(BuildContext context) {
-    List<MapEntry<String, int>> sortedEntries = workHistory.entries.toList()
-      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
-
-    int totalMinutesLastWeek = 0;
-    DateTime? lastDate;
-    int streak = 0;
-    int consecutiveDays = 0;
-
-    for (var entry in sortedEntries) {
-      DateTime date = DateTime.parse(entry.key);
-      if (date.isAfter(DateTime.now().subtract(Duration(days: 7)))) {
-        totalMinutesLastWeek += entry.value;
-      }
-      if (lastDate == null || lastDate.difference(date).inDays == 1) {
-        streak++;
-        lastDate = date;
-      } else if (lastDate.difference(date).inDays > 1) {
-        break;
-      }
-    }
-    consecutiveDays = streak;
-
-    int hoursLastWeek = totalMinutesLastWeek ~/ 60;
-    int minutesLastWeek = totalMinutesLastWeek % 60;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('운동 히스토리'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: sortedEntries.length,
-                itemBuilder: (context, index) {
-                  String dateStr = sortedEntries[index].key;
-                  int duration = sortedEntries[index].value;
-                  DateTime date = DateTime.parse(dateStr);
-                  String formattedDate = DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
-
-                  return ListTile(
-                    title: Text(formattedDate),
-                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                  );
-                },
-              ),
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '$consecutiveDays일 연속 운동 완료!',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
