@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import 'package:fl_chart/fl_chart.dart';
 
 void main() {
   runApp(const MyApp());
@@ -703,61 +704,89 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-  String _selectedDate = '';
-  String _selectedTime = '';
-  String _selectedExercise = '';
-  final List<Map<String, String>> _exerciseList = [];
+  final Map<String, int> todayWorkout = {
+    '러닝': 0,
+    '걷기': 0,
+    '자전거 타기': 0,
+    '수영': 0,
+    '요가': 0,
+    '웨이트': 0,
+    '기타': 0,
+  };
 
-  final List<String> _exerciseOptions = [
-    '러닝',
-    '걷기',
-    '자전거 타기',
-    '수영',
-    '요가',
-    '웨이트 트레이닝',
-  ];
+  final Map<String, int> workHistory = {};
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
+  void _addWorkout(String type, int duration) {
+    setState(() {
+      todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
+      String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      workHistory[today] = (workHistory[today] ?? 0) + duration;
+    });
   }
 
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
+  Future<void> _showAddWorkoutDialog() async {
+    final TextEditingController _durationController = TextEditingController();
+    String selectedType = '러닝'; // Default type
+    await showDialog(
       context: context,
-      initialTime: TimeOfDay.now(),
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('운동 추가'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _durationController,
+                decoration: const InputDecoration(labelText: '시간 (분)'),
+                keyboardType: TextInputType.number,
+              ),
+              DropdownButton<String>(
+                value: selectedType,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedType = newValue!;
+                  });
+                },
+                items: todayWorkout.keys.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('추가'),
+              onPressed: () {
+                if (_durationController.text.isNotEmpty) {
+                  _addWorkout(selectedType, int.parse(_durationController.text));
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
-    if (picked != null) {
-      setState(() {
-        _selectedTime = picked.format(context);
-      });
-    }
   }
 
-  void _addExercise() {
-    if (_selectedDate.isNotEmpty &&
-        _selectedTime.isNotEmpty &&
-        _selectedExercise.isNotEmpty) {
-      setState(() {
-        _exerciseList.add({
-          'date': _selectedDate,
-          'time': _selectedTime,
-          'exercise': _selectedExercise,
-        });
-        _selectedDate = '';
-        _selectedTime = '';
-        _selectedExercise = '';
-      });
-    }
+  List<PieChartSectionData> _getSections() {
+    double totalDuration = todayWorkout.values.fold(0, (sum, element) => sum + element);
+    return todayWorkout.entries.map((entry) {
+      return PieChartSectionData(
+        value: (totalDuration > 0) ? (entry.value / totalDuration) * 100 : 0,
+        title: '${entry.key} ${(entry.value / totalDuration * 100).toStringAsFixed(1)}%',
+        color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length],
+        radius: 50,
+        titleStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+      );
+    }).toList();
   }
 
   @override
@@ -765,59 +794,32 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '운동 기록',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => _selectDate(context),
-            child: Text(_selectedDate.isEmpty ? '날짜 선택' : '날짜: $_selectedDate'),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => _selectTime(context),
-            child: Text(_selectedTime.isEmpty ? '시간 선택' : '시간: $_selectedTime'),
-          ),
-          const SizedBox(height: 8),
-          DropdownButton<String>(
-            value: _selectedExercise.isEmpty ? null : _selectedExercise,
-            hint: const Text('운동 선택'),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedExercise = newValue!;
-              });
-            },
-            items:
-                _exerciseOptions.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _addExercise,
-            child: const Text('운동 추가'),
-          ),
-          const SizedBox(height: 16),
+        children: <Widget>[
           Expanded(
-            child: ListView.builder(
-              itemCount: _exerciseList.length,
-              itemBuilder: (context, index) {
-                final exercise = _exerciseList[index];
-                return ListTile(
-                  title: Text('${exercise['date']} ${exercise['time']}'),
-                  subtitle: Text(exercise['exercise']!),
-                );
-              },
+            child: PieChart(
+              PieChartData(
+                sections: _getSections(),
+                sectionsSpace: 2,
+                centerSpaceRadius: 40,
+              ),
             ),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () {}, // TODO: Implement details view
+                child: const Text('세부 내용'),
+              ),
+              ElevatedButton(
+                onPressed: _showAddWorkoutDialog,
+                child: const Text('운동 추가'),
+              ),
+              ElevatedButton(
+                onPressed: () {}, // TODO: Implement history view
+                child: const Text('히스토리'),
+              ),
+            ],
           ),
         ],
       ),
