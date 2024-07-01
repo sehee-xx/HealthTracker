@@ -263,8 +263,10 @@ class _MyHomePageState extends State<MyHomePage>
             ListTile(
               title: Lottie.asset(
                 'assets/running_man.json', // Lottie 애니메이션 파일 경로
-                width: 150,
-                height: 150,
+                width: 300,
+                height: 300,
+                repeat: true, // 반복을 비활성화
+                frameRate: FrameRate(30),
               ),
             ),
           ],
