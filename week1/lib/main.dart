@@ -704,7 +704,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
                     controller: _numericController,
                     keyboardType: TextInputType.number,
                     decoration:
-                        InputDecoration(labelText: 'Update ${widget.title}'),
+                        InputDecoration(labelText: '오늘의 ${widget.title} 수정'),
                   ),
                 ),
                 SizedBox(width: 10),
