@@ -494,10 +494,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                           children: [
                             ConstrainedBox(
                               constraints: BoxConstraints(
-                                maxWidth:
-                                    MediaQuery.of(context).size.width * 0.8,
-                                maxHeight:
-                                    MediaQuery.of(context).size.height * 0.5,
+                                maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                maxHeight: MediaQuery.of(context).size.height * 0.5,
                               ),
                               child: Image.file(image, fit: BoxFit.contain),
                             ),
@@ -521,33 +519,28 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                             const SizedBox(height: 10),
                             if (commentAdded)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
                                 child: Column(
                                   children: [
                                     Text(
                                       imageTuple.comments,
                                       textAlign: TextAlign.center,
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                     ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.edit,
-                                              color: Colors.white),
+                                          icon: const Icon(Icons.edit, color: Colors.white),
                                           onPressed: () {
                                             setState(() {
-                                              commentController.text =
-                                                  imageTuple.comments;
+                                              commentController.text = imageTuple.comments;
                                               commentAdded = false;
                                             });
                                           },
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete,
-                                              color: Colors.white),
+                                          icon: const Icon(Icons.delete, color: Colors.white),
                                           onPressed: () {
                                             setState(() {
                                               commentController.text = '';
@@ -563,25 +556,20 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                               ),
                             if (!commentAdded)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
                                 child: Column(
                                   children: [
                                     TextField(
                                       controller: commentController,
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      style: const TextStyle(color: Colors.white),
                                       decoration: const InputDecoration(
                                         hintText: 'Enter your comment',
-                                        hintStyle:
-                                            TextStyle(color: Colors.white54),
+                                        hintStyle: TextStyle(color: Colors.white54),
                                         enabledBorder: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.white),
+                                          borderSide: BorderSide(color: Colors.white),
                                         ),
                                         focusedBorder: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.white),
+                                          borderSide: BorderSide(color: Colors.white),
                                         ),
                                       ),
                                       onTap: () {
@@ -592,8 +580,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                     ElevatedButton(
                                       onPressed: () {
                                         setState(() {
-                                          imageTuple.comments =
-                                              commentController.text;
+                                          imageTuple.comments = commentController.text;
                                           commentAdded = true;
                                         });
                                       },
@@ -614,25 +601,17 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                         right: 10,
                         child: GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _images.removeAt(index);
-                              Navigator.of(context).pop();
-                            });
+                            _confirmDelete(context, index);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.8),
                               borderRadius: BorderRadius.circular(5),
                             ),
-                            child: const Text(
-                              'delete',
-                              style: TextStyle(
-                                color: Colors.deepPurple,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.deepPurple,
                             ),
                           ),
                         ),
@@ -658,6 +637,35 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
     ).then((_) {
       setState(() {});
     });
+  }
+
+  void _confirmDelete(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('정말 삭제하겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _filteredImages.removeAt(index);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                });
+              },
+              child: Text('삭제'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _filterImages(DateTime? filterDate) {
