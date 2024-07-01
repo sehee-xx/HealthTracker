@@ -1192,6 +1192,7 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
+
   void _addWorkout(String type, int duration) {
     setState(() {
       todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
@@ -1210,37 +1211,42 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('운동 추가'),
-          content: SingleChildScrollView(
-            child: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    DropdownButton<String>(
-                      value: _localSelectedType,
-                      isExpanded: true,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _localSelectedType = newValue!;
-                        });
-                      },
-                      items: <String>['러닝', '자전거 타기', '수영', '걷기', '요가', '웨이트']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
-                    TextField(
-                      controller: _durationController,
-                      decoration: const InputDecoration(labelText: '시간 (분)'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                );
-              },
-            ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  DropdownButton<String>(
+                    value: _localSelectedType,
+                    isExpanded: true,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _localSelectedType = newValue!;
+                      });
+                    },
+                    items: <String>[
+                      '러닝',
+                      '자전거 타기',
+                      '수영',
+                      '걷기',
+                      '요가',
+                      '웨이트',
+                      '기타'
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  TextField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(labelText: '시간 (분)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              );
+            },
           ),
           actions: <Widget>[
             TextButton(
@@ -1293,79 +1299,83 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
-    int totalMinutes =
-        todayWorkout.values.fold(0, (sum, element) => sum + element);
-    int hours = totalMinutes ~/ 60;
-    int minutes = totalMinutes % 60;
+  int totalMinutes = todayWorkout.values.fold(0, (sum, element) => sum + element);
+  int hours = totalMinutes ~/ 60;
+  int minutes = totalMinutes % 60;
 
-    List<Widget> legends =
-        todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
-      return Text(
-        '${entry.key}: ${entry.value}분',
-        style: TextStyle(
-            color: Colors.primaries[
-                todayWorkout.keys.toList().indexOf(entry.key) %
-                    Colors.primaries.length]),
-      );
-    }).toList();
+  List<Widget> legends = todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+    return Text(
+      '${entry.key}: ${entry.value}분',
+      style: TextStyle(
+        color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length],
+      ),
+    );
+  }).toList();
 
-    return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: totalMinutes > 0
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      height: 300, // 적절한 크기로 설정
-                      child: PieChart(
-                        PieChartData(
-                          sections: _getSections(),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 70,
+  return Scaffold(
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: totalMinutes > 0
+          ? Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            height: 200, // Adjust the height as needed
+                            child: PieChart(
+                              PieChartData(
+                                sections: _getSections(),
+                                sectionsSpace: 2,
+                                centerSpaceRadius: 70,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    Text('총 시간: $hours시간 $minutes분',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: legends.take(3).toList(),
-                    ),
-                    if (legends.length > 3)
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: legends.skip(3).toList(),
+                        alignment: WrapAlignment.center,
+                        children: legends,
                       ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        ElevatedButton(
-                          onPressed: detailPage,
-                          child: const Text('세부 내용'),
-                        ),
-                        ElevatedButton(
-                          onPressed: _showAddWorkoutDialog,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('운동 추가'),
-                        ),
-                        ElevatedButton(
-                          onPressed: showHistory,
-                          child: const Text('히스토리'),
-                        ),
-                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '총 시간: $hours시간 $minutes분',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: detailPage,
+                      child: const Text('세부 내용'),
+                    ),
+                    ElevatedButton(
+                      onPressed: _showAddWorkoutDialog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('운동 추가'),
+                    ),
+                    ElevatedButton(
+                      onPressed: showHistory,
+                      child: const Text('히스토리'),
                     ),
                   ],
-                )
-              : Column(
+                ),
+              ],
+            )
+          : Center(
+              child: SingleChildScrollView(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
@@ -1384,10 +1394,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        textStyle: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       child: Text('운동 시작하기'),
                     ),
@@ -1398,8 +1406,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ElevatedButton(
                           onPressed: detailPage,
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             textStyle: TextStyle(fontSize: 14),
                           ),
                           child: const Text('세부 내용'),
@@ -1408,8 +1415,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ElevatedButton(
                           onPressed: showHistory,
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             textStyle: TextStyle(fontSize: 14),
                           ),
                           child: const Text('히스토리'),
@@ -1418,11 +1424,16 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                     ),
                   ],
                 ),
-        ),
-      ),
-    );
-  }
+              ),
+            ),
+    ),
+  );
 }
+
+
+
+}
+
 
 class WorkoutDetailsPage extends StatelessWidget {
   final Map<String, int> todayWorkout;
@@ -1443,12 +1454,14 @@ class WorkoutDetailsPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
-            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: nonZeroWorkouts.isEmpty
           ? Center(
-              child: const Text('아직 운동을 시작하지 않았습니다'),
+              child: Text(
+                '아직 오늘 운동을 시작하지 않았습니다.',
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              ),
             )
           : Column(
               children: [
@@ -1462,8 +1475,7 @@ class WorkoutDetailsPage extends StatelessWidget {
                           _calculateCalories(type, duration); // 소모 칼로리 계산
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 4, horizontal: 8),
+                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                         child: ListTile(
                           title: Text(type),
                           subtitle: Text(
@@ -1478,10 +1490,7 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepPurple),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
                   ),
                 ),
               ],
@@ -1524,6 +1533,8 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 }
 
+
+
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
 
@@ -1562,8 +1573,7 @@ class WorkoutHistoryPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
-            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: Column(
         children: [
@@ -1578,14 +1588,11 @@ class WorkoutHistoryPage extends StatelessWidget {
                     DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
                 return Card(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   child: ListTile(
                     title: Text(formattedDate),
-                    subtitle:
-                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                    leading: const Icon(Icons.fitness_center,
-                        color: Colors.deepPurple),
+                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurple),
                   ),
                 );
               },
@@ -1597,18 +1604,12 @@ class WorkoutHistoryPage extends StatelessWidget {
               children: [
                 Text(
                   '$consecutiveDays일 연속 운동 완료!',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
                 ),
                 SizedBox(height: 8),
                 Text(
                   '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                   textAlign: TextAlign.center,
                 ),
               ],
