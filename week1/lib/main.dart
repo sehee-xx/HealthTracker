@@ -1375,8 +1375,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      '아직 오늘 운동을 시작하지 않았습니다',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      '아직 오늘 운동을 시작하지 않았습니다.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     SizedBox(height: 32),
                     ElevatedButton(
@@ -1410,7 +1410,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
-                            textStyle: TextStyle(fontSize: 16),
+                            textStyle: TextStyle(fontSize: 14),
                           ),
                           child: const Text('히스토리'),
                         ),
