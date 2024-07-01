@@ -1365,6 +1365,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                     ),
                   ],
                 )
+                
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
