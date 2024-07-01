@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:lottie/lottie.dart';
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
@@ -258,6 +259,13 @@ class _MyHomePageState extends State<MyHomePage>
               onTap: () {
                 _showRandomQuote();
               },
+            ),
+            ListTile(
+              title: Lottie.asset(
+                'assets/running_man.json', // Lottie 애니메이션 파일 경로
+                width: 150,
+                height: 150,
+              ),
             ),
           ],
         ),
@@ -1192,7 +1200,6 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-
   void _addWorkout(String type, int duration) {
     setState(() {
       todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
@@ -1299,141 +1306,145 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   @override
   Widget build(BuildContext context) {
-  int totalMinutes = todayWorkout.values.fold(0, (sum, element) => sum + element);
-  int hours = totalMinutes ~/ 60;
-  int minutes = totalMinutes % 60;
+    int totalMinutes =
+        todayWorkout.values.fold(0, (sum, element) => sum + element);
+    int hours = totalMinutes ~/ 60;
+    int minutes = totalMinutes % 60;
 
-  List<Widget> legends = todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
-    return Text(
-      '${entry.key}: ${entry.value}분',
-      style: TextStyle(
-        color: Colors.primaries[todayWorkout.keys.toList().indexOf(entry.key) % Colors.primaries.length],
-      ),
-    );
-  }).toList();
+    List<Widget> legends =
+        todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+      return Text(
+        '${entry.key}: ${entry.value}분',
+        style: TextStyle(
+          color: Colors.primaries[
+              todayWorkout.keys.toList().indexOf(entry.key) %
+                  Colors.primaries.length],
+        ),
+      );
+    }).toList();
 
-  return Scaffold(
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: totalMinutes > 0
-          ? Column(
-              children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Container(
-                            height: 200, // Adjust the height as needed
-                            child: PieChart(
-                              PieChartData(
-                                sections: _getSections(),
-                                sectionsSpace: 2,
-                                centerSpaceRadius: 70,
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: totalMinutes > 0
+            ? Column(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Container(
+                              height: 200, // Adjust the height as needed
+                              child: PieChart(
+                                PieChartData(
+                                  sections: _getSections(),
+                                  sectionsSpace: 2,
+                                  centerSpaceRadius: 70,
+                                ),
                               ),
                             ),
                           ),
                         ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: legends,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '총 시간: $hours시간 $minutes분',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      ElevatedButton(
+                        onPressed: detailPage,
+                        child: const Text('세부 내용'),
                       ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        alignment: WrapAlignment.center,
-                        children: legends,
+                      ElevatedButton(
+                        onPressed: _showAddWorkoutDialog,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurple,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('운동 추가'),
+                      ),
+                      ElevatedButton(
+                        onPressed: showHistory,
+                        child: const Text('히스토리'),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            : Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.sentiment_dissatisfied,
+                        color: Colors.deepPurple,
+                        size: 80,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        '아직 오늘 운동을 시작하지 않았습니다.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(height: 32),
+                      ElevatedButton(
+                        onPressed: _showAddWorkoutDialog,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurple,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 16),
+                          textStyle: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        child: Text('운동 시작하기'),
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: detailPage,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: TextStyle(fontSize: 14),
+                            ),
+                            child: const Text('세부 내용'),
+                          ),
+                          SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: showHistory,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              textStyle: TextStyle(fontSize: 14),
+                            ),
+                            child: const Text('히스토리'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  '총 시간: $hours시간 $minutes분',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    ElevatedButton(
-                      onPressed: detailPage,
-                      child: const Text('세부 내용'),
-                    ),
-                    ElevatedButton(
-                      onPressed: _showAddWorkoutDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('운동 추가'),
-                    ),
-                    ElevatedButton(
-                      onPressed: showHistory,
-                      child: const Text('히스토리'),
-                    ),
-                  ],
-                ),
-              ],
-            )
-          : Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.sentiment_dissatisfied,
-                      color: Colors.deepPurple,
-                      size: 80,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      '아직 오늘 운동을 시작하지 않았습니다.',
-                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                    ),
-                    SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _showAddWorkoutDialog,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                        textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      child: Text('운동 시작하기'),
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: detailPage,
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            textStyle: TextStyle(fontSize: 14),
-                          ),
-                          child: const Text('세부 내용'),
-                        ),
-                        SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed: showHistory,
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            textStyle: TextStyle(fontSize: 14),
-                          ),
-                          child: const Text('히스토리'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ),
-            ),
-    ),
-  );
+      ),
+    );
+  }
 }
-
-
-
-}
-
 
 class WorkoutDetailsPage extends StatelessWidget {
   final Map<String, int> todayWorkout;
@@ -1454,7 +1465,8 @@ class WorkoutDetailsPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: nonZeroWorkouts.isEmpty
           ? Center(
@@ -1475,7 +1487,8 @@ class WorkoutDetailsPage extends StatelessWidget {
                           _calculateCalories(type, duration); // 소모 칼로리 계산
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
                         child: ListTile(
                           title: Text(type),
                           subtitle: Text(
@@ -1490,7 +1503,10 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple),
                   ),
                 ),
               ],
@@ -1533,8 +1549,6 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 }
 
-
-
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
 
@@ -1573,7 +1587,8 @@ class WorkoutHistoryPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: Column(
         children: [
@@ -1588,11 +1603,14 @@ class WorkoutHistoryPage extends StatelessWidget {
                     DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   child: ListTile(
                     title: Text(formattedDate),
-                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurple),
+                    subtitle:
+                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    leading: const Icon(Icons.fitness_center,
+                        color: Colors.deepPurple),
                   ),
                 );
               },
@@ -1604,12 +1622,18 @@ class WorkoutHistoryPage extends StatelessWidget {
               children: [
                 Text(
                   '$consecutiveDays일 연속 운동 완료!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple),
                 ),
                 SizedBox(height: 8),
                 Text(
                   '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                   textAlign: TextAlign.center,
                 ),
               ],
