@@ -674,72 +674,77 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true, // 키보드가 나타날 때 화면 조정
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Icon(
-              _getIconForTitle(widget.title),
-              size: 100,
-              color: Colors.deepPurple,
-            ),
-            SizedBox(height: 20),
-            Text(
-              widget.title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        // 스크롤 가능하도록 설정
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Icon(
+                _getIconForTitle(widget.title),
+                size: 100,
                 color: Colors.deepPurple,
               ),
-            ),
-            SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _numericController,
-                    keyboardType: TextInputType.number,
-                    decoration:
-                        InputDecoration(labelText: '오늘의 ${widget.title} 수정'),
-                  ),
-                ),
-                SizedBox(width: 10),
-                Text(
-                  unit,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                String updatedData = '${_numericController.text} $unit';
-                Navigator.pop(context, updatedData);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-              ),
-              child: Text(
-                '저장',
+              SizedBox(height: 20),
+              Text(
+                widget.title,
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16.0,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
                 ),
               ),
-            ),
-            SizedBox(height: 16.0),
-            Expanded(
-              child: buildChart(chartData),
-            ),
-          ],
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _numericController,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                          InputDecoration(labelText: '오늘의 ${widget.title} 수정'),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    unit,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  String updatedData = '${_numericController.text} $unit';
+                  Navigator.pop(context, updatedData);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                ),
+                child: Text(
+                  '저장',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.0,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.0),
+              Container(
+                height: 300, // 고정 높이 설정
+                child: buildChart(chartData),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1207,6 +1212,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('운동 추가'),
+<<<<<<< HEAD
           content: SingleChildScrollView(
             child: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
@@ -1244,6 +1250,37 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                 );
               },
             ),
+=======
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  DropdownButton<String>(
+                    value: _localSelectedType,
+                    isExpanded: true,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _localSelectedType = newValue!;
+                      });
+                    },
+                    items: <String>['러닝', '자전거 타기', '수영', '걷기', '요가', '웨이트']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  TextField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(labelText: '시간 (분)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              );
+            },
+>>>>>>> 444ade2 (Modify: 그래프 데이터 수정 시 SingleChildScrollView 추가)
           ),
           actions: <Widget>[
             TextButton(
@@ -1330,9 +1367,22 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ),
                       ),
                     ),
+<<<<<<< HEAD
                     Text('총 시간: $hours시간 $minutes분',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
+=======
+                  ),
+                  Text('총 시간: $hours시간 $minutes분',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: legends.take(3).toList(),
+                  ),
+                  if (legends.length > 3)
+>>>>>>> 444ade2 (Modify: 그래프 데이터 수정 시 SingleChildScrollView 추가)
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
@@ -1387,8 +1437,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         textStyle: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
@@ -1401,7 +1451,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ElevatedButton(
                           onPressed: detailPage,
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             textStyle: TextStyle(fontSize: 16),
                           ),
                           child: const Text('세부 내용'),
@@ -1410,7 +1461,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ElevatedButton(
                           onPressed: showHistory,
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             textStyle: TextStyle(fontSize: 16),
                           ),
                           child: const Text('히스토리'),
@@ -1424,7 +1476,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     );
   }
 }
-
 
 class WorkoutDetailsPage extends StatelessWidget {
   final Map<String, int> todayWorkout;
@@ -1445,7 +1496,8 @@ class WorkoutDetailsPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: nonZeroWorkouts.isEmpty
           ? Center(
@@ -1463,7 +1515,8 @@ class WorkoutDetailsPage extends StatelessWidget {
                           _calculateCalories(type, duration); // 소모 칼로리 계산
 
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
                         child: ListTile(
                           title: Text(type),
                           subtitle: Text(
@@ -1478,7 +1531,10 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple),
                   ),
                 ),
               ],
@@ -1521,8 +1577,6 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 }
 
-
-
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
 
@@ -1561,7 +1615,8 @@ class WorkoutHistoryPage extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
         actionsIconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
       body: Column(
         children: [
@@ -1576,11 +1631,14 @@ class WorkoutHistoryPage extends StatelessWidget {
                     DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   child: ListTile(
                     title: Text(formattedDate),
-                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurple),
+                    subtitle:
+                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    leading: const Icon(Icons.fitness_center,
+                        color: Colors.deepPurple),
                   ),
                 );
               },
@@ -1592,12 +1650,18 @@ class WorkoutHistoryPage extends StatelessWidget {
               children: [
                 Text(
                   '$consecutiveDays일 연속 운동 완료!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple),
                 ),
                 SizedBox(height: 8),
                 Text(
                   '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                   textAlign: TextAlign.center,
                 ),
               ],
