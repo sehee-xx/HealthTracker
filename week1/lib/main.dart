@@ -160,6 +160,32 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
+  void _addOrEditContact({Map<String, String>? contact, int? index}) async {
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        return ContactInputDialog(contact: contact);
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        if (index != null) {
+          contacts[index] = result;
+        } else {
+          contacts.add(result);
+        }
+      });
+    }
+  }
+
+  void _deleteContact(int index) {
+    setState(() {
+      contacts.removeAt(index);
+    });
+    Navigator.of(context).pop();
+  }
+
   Future<void> _pickImageCam() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
 
@@ -188,32 +214,6 @@ class _MyHomePageState extends State<MyHomePage>
     setState(() {
       currentQuote = quotes[randomIndex];
     });
-  }
-
-  void _addOrEditContact({Map<String, String>? contact, int? index}) async {
-    final result = await showDialog<Map<String, String>>(
-      context: context,
-      builder: (context) {
-        return ContactInputDialog(contact: contact);
-      },
-    );
-
-    if (result != null) {
-      setState(() {
-        if (index != null) {
-          contacts[index] = result;
-        } else {
-          contacts.add(result);
-        }
-      });
-    }
-  }
-
-  void _deleteContact(int index) {
-    setState(() {
-      contacts.removeAt(index);
-    });
-    Navigator.of(context).pop();
   }
 
   @override
