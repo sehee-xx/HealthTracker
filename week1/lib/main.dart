@@ -741,7 +741,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           maxY = 10;
           break;
       }
-
       // 차트 데이터 초기화 (평균값으로 설정)
       double initialValue = (minY + maxY) / 2;
       chartData = List.generate(7, (index) {
