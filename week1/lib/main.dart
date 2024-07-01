@@ -194,8 +194,8 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images
-            .insert(0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+        _images.insert(
+            0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -205,8 +205,8 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       setState(() {
-        _images
-            .insert(0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+        _images.insert(
+            0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -236,10 +236,11 @@ class _MyHomePageState extends State<MyHomePage>
       DateTime(2024, 7, 1, 16, 0)
     ];
 
-    for (int i = imagePaths.length-1; i >= 0; i--) {
+    for (int i = imagePaths.length - 1; i >= 0; i--) {
       final byteData = await rootBundle.load(imagePaths[i]);
       final file = File('${(await getTemporaryDirectory()).path}/image$i.jpg');
-      await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+      await file.writeAsBytes(byteData.buffer
+          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
 
       setState(() {
         _images.add(
@@ -292,17 +293,64 @@ class _MyHomePageState extends State<MyHomePage>
               ),
             ),
             ListTile(
-              title: Text(currentQuote),
+              title: Text(
+                currentQuote,
+                style: TextStyle(fontSize: 14), // 폰트 크기 조정
+              ),
               onTap: () {
                 _showRandomQuote();
               },
             ),
             ListTile(
+              leading: Icon(Icons.contact_page, color: Colors.deepPurple),
+              title: Text(
+                'Contact',
+                style: TextStyle(fontSize: 14), // 폰트 크기 조정
+              ),
+              onTap: () {
+                _tabController.index = 0;
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.image, color: Colors.deepPurple),
+              title: Text(
+                'Image',
+                style: TextStyle(fontSize: 14), // 폰트 크기 조정
+              ),
+              onTap: () {
+                _tabController.index = 1;
+                Navigator.pop(context); // Close the drawer
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.fitness_center, color: Colors.deepPurple),
+              title: Text(
+                'Health',
+                style: TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                _tabController.index = 2;
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.health_and_safety, color: Colors.deepPurple),
+              title: Text(
+                'Care',
+                style: TextStyle(fontSize: 14),
+              ),
+              onTap: () {
+                _tabController.index = 3;
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
               title: Lottie.asset(
-                'assets/running_man.json', // Lottie 애니메이션 파일 경로
+                'assets/running_man.json',
                 width: 300,
                 height: 300,
-                repeat: true, // 반복을 비활성화
+                repeat: true,
                 frameRate: FrameRate(30),
               ),
             ),
@@ -718,9 +766,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true, // 키보드가 나타날 때 화면 조정
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(),
       body: SingleChildScrollView(
         // 스크롤 가능하도록 설정
         child: Padding(
