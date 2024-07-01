@@ -905,7 +905,6 @@ class _CareTabState extends State<CareTab> {
               title = '건강 데이터';
               break;
           }
-
           return GestureDetector(
             onTap: () async {
               final updatedData = await Navigator.push(
@@ -922,6 +921,7 @@ class _CareTabState extends State<CareTab> {
                 });
               }
             },
+          
             child: buildHealthCard(
               context,
               title,
@@ -1188,8 +1188,6 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-  Map<String, int> todayWorkout = {};
-  Map<String, int> workHistory = {};
 
   void _addWorkout(String type, int duration) {
     setState(() {
@@ -1209,41 +1207,43 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('운동 추가'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  DropdownButton<String>(
-                    value: _localSelectedType,
-                    isExpanded: true,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _localSelectedType = newValue!;
-                      });
-                    },
-                    items: <String>[
-                      '러닝',
-                      '자전거 타기',
-                      '수영',
-                      '걷기',
-                      '요가',
-                      '웨이트'
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  TextField(
-                    controller: _durationController,
-                    decoration: const InputDecoration(labelText: '시간 (분)'),
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              );
-            },
+          content: SingleChildScrollView(
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    DropdownButton<String>(
+                      value: _localSelectedType,
+                      isExpanded: true,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _localSelectedType = newValue!;
+                        });
+                      },
+                      items: <String>[
+                        '러닝',
+                        '자전거 타기',
+                        '수영',
+                        '걷기',
+                        '요가',
+                        '웨이트'
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    TextField(
+                      controller: _durationController,
+                      decoration: const InputDecoration(labelText: '시간 (분)'),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -1313,60 +1313,62 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: totalMinutes > 0
-            ? Column(
-                children: <Widget>[
-                  Expanded(
-                    child: PieChart(
-                      PieChartData(
-                        sections: _getSections(),
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 70,
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: totalMinutes > 0
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 300, // 적절한 크기로 설정
+                      child: PieChart(
+                        PieChartData(
+                          sections: _getSections(),
+                          sectionsSpace: 2,
+                          centerSpaceRadius: 70,
+                        ),
                       ),
                     ),
-                  ),
-                  Text('총 시간: $hours시간 $minutes분',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: legends.take(3).toList(),
-                  ),
-                  if (legends.length > 3)
+                    Text('총 시간: $hours시간 $minutes분',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children: legends.skip(3).toList(),
+                      children: legends.take(3).toList(),
                     ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      ElevatedButton(
-                        onPressed: detailPage,
-                        child: const Text('세부 내용'),
+                    if (legends.length > 3)
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: legends.skip(3).toList(),
                       ),
-                      ElevatedButton(
-                        onPressed: _showAddWorkoutDialog,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        ElevatedButton(
+                          onPressed: detailPage,
+                          child: const Text('세부 내용'),
                         ),
-                        child: const Text('운동 추가'),
-                      ),
-                      ElevatedButton(
-                        onPressed: showHistory,
-                        child: const Text('히스토리'),
-                      ),
-                    ],
-                  ),
-                ],
-              )
-            : Center(
-                child: Column(
+                        ElevatedButton(
+                          onPressed: _showAddWorkoutDialog,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('운동 추가'),
+                        ),
+                        ElevatedButton(
+                          onPressed: showHistory,
+                          child: const Text('히스토리'),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
@@ -1417,7 +1419,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                     ),
                   ],
                 ),
-              ),
+        ),
       ),
     );
   }
