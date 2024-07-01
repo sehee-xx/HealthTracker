@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Health Tracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -137,7 +137,6 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
   }
-
 
   void toggleImageButtons() {
     setState(() {
@@ -263,7 +262,6 @@ class _MyHomePageState extends State<MyHomePage>
           ],
         ),
       ),
-      
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -353,7 +351,7 @@ class _MyHomePageState extends State<MyHomePage>
                   ],
                 )
               : null,
-      );
+    );
   }
 
   Widget imageGalleryTab() {
