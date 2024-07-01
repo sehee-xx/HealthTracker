@@ -998,14 +998,14 @@ class _CareTabState extends State<CareTab> {
                 children: <Widget>[
                   Icon(
                     icon,
-                    size: 48.0,
+                    size: 44.0,
                     color: Colors.white,
                   ),
                   const SizedBox(height: 16.0),
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 18.0,
+                      fontSize: 16.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1014,7 +1014,7 @@ class _CareTabState extends State<CareTab> {
                   Text(
                     data,
                     style: const TextStyle(
-                      fontSize: 16.0,
+                      fontSize: 14.0,
                       color: Colors.white70,
                     ),
                   ),
