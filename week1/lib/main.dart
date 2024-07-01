@@ -484,149 +484,153 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
               backgroundColor: Colors.transparent,
               insetPadding: const EdgeInsets.all(10),
               child: SingleChildScrollView(
-                child: Container(
-                  color: Colors.black.withOpacity(0.6),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                maxHeight: MediaQuery.of(context).size.height * 0.5,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 15.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 15.0),
+                    color: Colors.black.withOpacity(0.6),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.8,
+                                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                                ),
+                                child: Image.file(image, fit: BoxFit.contain),
                               ),
-                              child: Image.file(image, fit: BoxFit.contain),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              '${imageTuple.author}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            if (commentAdded)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      imageTuple.comments,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(Icons.edit, color: Colors.white),
-                                          onPressed: () {
-                                            setState(() {
-                                              commentController.text = imageTuple.comments;
-                                              commentAdded = false;
-                                            });
-                                          },
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete, color: Colors.white),
-                                          onPressed: () {
-                                            setState(() {
-                                              commentController.text = '';
-                                              imageTuple.comments = '';
-                                              commentAdded = false;
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              const SizedBox(height: 10),
+                              Text(
+                                '${imageTuple.author}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            if (!commentAdded)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                child: Column(
-                                  children: [
-                                    TextField(
-                                      controller: commentController,
-                                      style: const TextStyle(color: Colors.white),
-                                      decoration: const InputDecoration(
-                                        hintText: 'Enter your comment',
-                                        hintStyle: TextStyle(color: Colors.white54),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(color: Colors.white),
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        setState(() {});
-                                      },
-                                    ),
-                                    const SizedBox(height: 10),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          imageTuple.comments = commentController.text;
-                                          commentAdded = true;
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.deepPurple,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      child: const Text('Add Comment'),
-                                    ),
-                                  ],
+                              const SizedBox(height: 5),
+                              Text(
+                                '${DateFormat('yyyy년 MM월 dd일 - HH:mm').format(imageTuple.timeStamp)}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
                                 ),
                               ),
-                          ],
+                              const SizedBox(height: 10),
+                              if (commentAdded)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        imageTuple.comments,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(color: Colors.white),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Colors.white),
+                                            onPressed: () {
+                                              setState(() {
+                                                commentController.text = imageTuple.comments;
+                                                commentAdded = false;
+                                              });
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, color: Colors.white),
+                                            onPressed: () {
+                                              setState(() {
+                                                commentController.text = '';
+                                                imageTuple.comments = '';
+                                                commentAdded = false;
+                                              });
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              if (!commentAdded)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  child: Column(
+                                    children: [
+                                      TextField(
+                                        controller: commentController,
+                                        style: const TextStyle(color: Colors.white),
+                                        decoration: const InputDecoration(
+                                          hintText: 'Enter your comment',
+                                          hintStyle: TextStyle(color: Colors.white54),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(color: Colors.white),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(color: Colors.white),
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          setState(() {});
+                                        },
+                                      ),
+                                      const SizedBox(height: 10),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            imageTuple.comments = commentController.text;
+                                            commentAdded = true;
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.deepPurple,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        child: const Text('Add Comment'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: () {
-                            _confirmDelete(context, index);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.8),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.deepPurple,
+                        Positioned(
+                          top: 0,
+                          right: 10,
+                          child: GestureDetector(
+                            onTap: () {
+                              _confirmDelete(context, index);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.deepPurple,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        top: 10,
-                        left: 10,
-                        child: IconButton(
-                          icon: const Icon(Icons.undo, color: Colors.white),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
+                        Positioned(
+                          top: 0,
+                          left: 10,
+                          child: IconButton(
+                            icon: const Icon(Icons.undo, color: Colors.white),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -638,7 +642,6 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       setState(() {});
     });
   }
-
   void _confirmDelete(BuildContext context, int index) {
     showDialog(
       context: context,
