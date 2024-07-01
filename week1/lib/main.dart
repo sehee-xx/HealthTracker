@@ -733,7 +733,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
           maxY = 20000;
           break;
         case '체중':
-          minY = 30;
+          minY = 10;
           maxY = 150;
           break;
         default:
