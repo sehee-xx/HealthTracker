@@ -595,17 +595,16 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   late TextEditingController _numericController;
   late String unit;
   late List<FlSpot> chartData;
-  double minY = 0;
-  double maxY = 30; // 기본값, 데이터에 따라 다르게 설정
 
   @override
   void initState() {
     super.initState();
+    // Split the data into numeric and unit parts
     List<String> dataParts = widget.data.split(' ');
     String numericPart = dataParts[0];
     unit = dataParts.length > 1 ? dataParts[1] : '';
     _numericController = TextEditingController(text: numericPart);
-    _updateChartData();
+    _updateChartData(); // Initialize chart data
   }
 
   @override
@@ -615,60 +614,26 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   }
 
   void _updateChartData() {
-    int currentDayIndex = DateTime.now().weekday - 1;
-    double numericData = double.tryParse(_numericController.text) ?? 0;
+    int currentDayIndex = DateTime.now().weekday -
+        1; // Get current day index (0 for Monday, ..., 6 for Sunday)
 
-    setState(() {
-      // 데이터에 따라 y축 범위 설정
-      switch (widget.title) {
-        case '수면시간':
-          minY = 0;
-          maxY = 12;
-          break;
-        case '심박수':
-          minY = 40;
-          maxY = 120;
-          break;
-        case '칼로리':
-          minY = 0;
-          maxY = 2000;
-          break;
-        case '혈당':
-          minY = 50;
-          maxY = 150;
-          break;
-        case '걸음수':
-          minY = 0;
-          maxY = 20000;
-          break;
-        case '체중':
-          minY = 30;
-          maxY = 150;
-          break;
-        default:
-          minY = 0;
-          maxY = 10;
-          break;
-      }
+    // Example: Update chartData based on current day index
+    double numericData =
+        double.tryParse(_numericController.text) ?? 0; // Parse numeric data
 
-      // 차트 데이터 초기화 (평균값으로 설정)
-      double initialValue = (minY + maxY) / 2;
-      chartData = List.generate(7, (index) {
-        return FlSpot(index.toDouble(), initialValue);
-      });
+    chartData = [
+      FlSpot(0, 5),
+      FlSpot(1, 4),
+      FlSpot(2, 3),
+      FlSpot(3, 5),
+      FlSpot(4, 6),
+      FlSpot(5, 4),
+      FlSpot(6, 7),
+    ];
 
-      // 현재 요일의 데이터를 입력 값으로 업데이트
-      chartData[currentDayIndex] =
-          FlSpot(currentDayIndex.toDouble(), numericData);
-
-      // Clamp the chart data values to be within minY and maxY
-      chartData = chartData.map((spot) {
-        double yValue = spot.y;
-        if (yValue < minY) yValue = minY;
-        if (yValue > maxY) yValue = maxY;
-        return FlSpot(spot.x, yValue);
-      }).toList();
-    });
+    // Update the value for the current day index
+    chartData[currentDayIndex] =
+        FlSpot(currentDayIndex.toDouble(), numericData);
   }
 
   @override
@@ -699,15 +664,17 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             SizedBox(height: 10),
             Row(
               children: [
+                // Numeric part of the data (editable)
                 Expanded(
                   child: TextField(
                     controller: _numericController,
                     keyboardType: TextInputType.number,
                     decoration:
-                        InputDecoration(labelText: '오늘의 ${widget.title} 수정'),
+                        InputDecoration(labelText: 'Update ${widget.title}'),
                   ),
                 ),
                 SizedBox(width: 10),
+                // Unit part of the data (non-editable)
                 Text(
                   unit,
                   style: TextStyle(
@@ -722,7 +689,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ElevatedButton(
               onPressed: () {
                 String updatedData = '${_numericController.text} $unit';
-                Navigator.pop(context, updatedData);
+                Navigator.pop(context, updatedData); // Pass updated data back
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
@@ -737,7 +704,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
             SizedBox(height: 16.0),
             Expanded(
-              child: buildChart(chartData),
+              child: buildChart(chartData), // Build the chart with the data
             ),
           ],
         ),
@@ -767,13 +734,11 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   Widget buildChart(List<FlSpot> chartData) {
     return LineChart(
       LineChartData(
-        minY: minY,
-        maxY: maxY,
         lineBarsData: [
           LineChartBarData(
             spots: chartData,
             isCurved: true,
-            color: Colors.deepPurple,
+            color: Colors.deepPurple, // Specify line color here
             barWidth: 4,
             isStrokeCapRound: true,
             belowBarData: BarAreaData(show: false),
@@ -812,13 +777,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+            sideTitles: SideTitles(showTitles: false), // Hide left side titles
           ),
           topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+            sideTitles: SideTitles(showTitles: false), // Hide right side titles
           ),
         ),
         borderData: FlBorderData(
@@ -841,7 +806,7 @@ class _CareTabState extends State<CareTab> {
   List<String> dataItems = [
     '8 hours',
     '70 bpm',
-    '600 kcal',
+    '300 kcal',
     '100 mg/dL',
     '10000 steps',
     '65 kg'
@@ -1379,6 +1344,7 @@ class WorkoutDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('오늘의 운동'),
+        backgroundColor: Colors.deepPurple,
       ),
       body: nonZeroWorkouts.isEmpty
           ? Center(
@@ -1395,10 +1361,14 @@ class WorkoutDetailsPage extends StatelessWidget {
                       int calories =
                           _calculateCalories(type, duration); // 소모 칼로리 계산
 
-                      return ListTile(
-                        title: Text(type),
-                        subtitle: Text(
-                            '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        child: ListTile(
+                          title: Text(type),
+                          subtitle: Text(
+                              '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                          leading: _getIconForWorkout(type),
+                        ),
                       );
                     },
                   ),
@@ -1407,12 +1377,31 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
                   ),
                 ),
               ],
             ),
     );
+  }
+
+  Icon _getIconForWorkout(String type) {
+    switch (type) {
+      case '러닝':
+        return Icon(Icons.directions_run, color: Colors.deepPurple);
+      case '자전거 타기':
+        return Icon(Icons.directions_bike, color: Colors.deepPurple);
+      case '수영':
+        return Icon(Icons.pool, color: Colors.deepPurple);
+      case '걷기':
+        return Icon(Icons.directions_walk, color: Colors.deepPurple);
+      case '요가':
+        return Icon(Icons.self_improvement, color: Colors.deepPurple);
+      case '웨이트':
+        return Icon(Icons.fitness_center, color: Colors.deepPurple);
+      default:
+        return Icon(Icons.fitness_center, color: Colors.deepPurple);
+    }
   }
 
   int _calculateCalories(String type, int duration) {
@@ -1430,6 +1419,8 @@ class WorkoutDetailsPage extends StatelessWidget {
     return duration * 5; // 기타
   }
 }
+
+
 
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
@@ -1467,45 +1458,47 @@ class WorkoutHistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('운동 히스토리'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: sortedEntries.length,
-                itemBuilder: (context, index) {
-                  String dateStr = sortedEntries[index].key;
-                  int duration = sortedEntries[index].value;
-                  DateTime date = DateTime.parse(dateStr);
-                  String formattedDate =
-                      DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: sortedEntries.length,
+              itemBuilder: (context, index) {
+                String dateStr = sortedEntries[index].key;
+                int duration = sortedEntries[index].value;
+                DateTime date = DateTime.parse(dateStr);
+                String formattedDate =
+                    DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
-                  return ListTile(
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
                     title: Text(formattedDate),
-                    subtitle:
-                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                  );
-                },
-              ),
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '$consecutiveDays일 연속 운동 완료!',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurple),
                   ),
-                  Text(
-                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  '$consecutiveDays일 연속 운동 완료!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
