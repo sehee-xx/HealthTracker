@@ -358,11 +358,10 @@ class _MyHomePageState extends State<MyHomePage>
     return _images.isEmpty
         ? Center(
             child: Container(
-              color: Colors.grey[200],
               child: Center(
                 child: Text(
                   '아직 추가된 이미지가 없습니다.',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 18),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
                 ),
               ),
             ),
@@ -1288,7 +1287,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                 ? Text('총 시간: $hours시간 $minutes분',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
                 : Text('아직 운동을 하지 않았습니다.',
-                    style: TextStyle(fontSize: 16, color: Colors.grey)),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700])),
             Wrap(
               spacing: 8,
               runSpacing: 8,
