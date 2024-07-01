@@ -9,6 +9,8 @@ import 'dart:async';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:lottie/lottie.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
@@ -136,6 +138,7 @@ class _MyHomePageState extends State<MyHomePage>
       setState(() {}); // Tab 변경 시 상태 업데이트
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
+    _loadInitialImages(); // 디폴트 이미지 추가
   }
 
   void toggleImageButtons() {
@@ -192,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (pickedFile != null) {
       setState(() {
         _images
-            .add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+            .insert(0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -203,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage>
     if (pickedFile != null) {
       setState(() {
         _images
-            .add(ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
+            .insert(0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
       });
     }
   }
@@ -214,6 +217,41 @@ class _MyHomePageState extends State<MyHomePage>
     setState(() {
       currentQuote = quotes[randomIndex];
     });
+  }
+
+  Future<void> _loadInitialImages() async {
+    final List<String> imagePaths = [
+      'assets/pics/image0.jpg',
+      'assets/pics/image1.jpg',
+      'assets/pics/image2.jpeg',
+      'assets/pics/image3.jpg',
+      'assets/pics/image4.jpg'
+    ];
+
+    final List<DateTime> imageTimes = [
+      DateTime(2024, 6, 30, 12, 13),
+      DateTime(2024, 6, 30, 18, 12),
+      DateTime(2024, 7, 1, 7, 38),
+      DateTime(2024, 7, 1, 13, 1),
+      DateTime(2024, 7, 1, 16, 0)
+    ];
+
+    for (int i = imagePaths.length-1; i >= 0; i--) {
+      final byteData = await rootBundle.load(imagePaths[i]);
+      final file = File('${(await getTemporaryDirectory()).path}/image$i.jpg');
+      await file.writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+
+      setState(() {
+        _images.add(
+          ImageTuple(
+            file,
+            '수지',
+            imageTimes[i],
+            '',
+          ),
+        );
+      });
+    }
   }
 
   @override
@@ -366,13 +404,9 @@ class _MyHomePageState extends State<MyHomePage>
   Widget imageGalleryTab() {
     return _images.isEmpty
         ? Center(
-            child: Container(
-              child: Center(
-                child: Text(
-                  '아직 추가된 이미지가 없습니다.',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 16),
-                ),
-              ),
+            child: Text(
+              '아직 추가된 이미지가 없습니다.',
+              style: TextStyle(color: Colors.grey[700], fontSize: 16),
             ),
           )
         : Padding(
