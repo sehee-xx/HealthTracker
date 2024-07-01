@@ -1435,7 +1435,7 @@ class WorkoutDetailsPage extends StatelessWidget {
       case '웨이트':
         return Icon(Icons.fitness_center, color: Colors.deepPurple);
       default:
-        return Icon(Icons.fitness_center, color: Colors.deepPurple);
+        return Icon(Icons.stream, color: Colors.deepPurple);
     }
   }
 
