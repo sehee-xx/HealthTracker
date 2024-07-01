@@ -644,7 +644,10 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('정말 삭제하겠습니까?'),
+          title: Text(
+            '정말 삭제하겠습니까?',
+            style: TextStyle(fontSize:16),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -654,11 +657,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  _filteredImages.removeAt(index);
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                });
+                _deleteImage(context, index);
               },
               child: Text('삭제'),
             ),
@@ -668,6 +667,13 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
     );
   }
 
+  void _deleteImage(BuildContext context, int index) {
+    setState(() {
+      _filteredImages.removeAt(index);
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+    });
+  }
   void _filterImages(DateTime? filterDate) {
     setState(() {
       if (filterDate == null) {
