@@ -595,16 +595,17 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   late TextEditingController _numericController;
   late String unit;
   late List<FlSpot> chartData;
+  double minY = 0;
+  double maxY = 10; // 기본값, 데이터에 따라 다르게 설정
 
   @override
   void initState() {
     super.initState();
-    // Split the data into numeric and unit parts
     List<String> dataParts = widget.data.split(' ');
     String numericPart = dataParts[0];
     unit = dataParts.length > 1 ? dataParts[1] : '';
     _numericController = TextEditingController(text: numericPart);
-    _updateChartData(); // Initialize chart data
+    _updateChartData();
   }
 
   @override
@@ -614,12 +615,9 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   }
 
   void _updateChartData() {
-    int currentDayIndex = DateTime.now().weekday -
-        1; // Get current day index (0 for Monday, ..., 6 for Sunday)
+    int currentDayIndex = DateTime.now().weekday - 1;
 
-    // Example: Update chartData based on current day index
-    double numericData =
-        double.tryParse(_numericController.text) ?? 0; // Parse numeric data
+    double numericData = double.tryParse(_numericController.text) ?? 0;
 
     chartData = [
       FlSpot(0, 5),
@@ -631,9 +629,42 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
       FlSpot(6, 7),
     ];
 
-    // Update the value for the current day index
     chartData[currentDayIndex] =
         FlSpot(currentDayIndex.toDouble(), numericData);
+
+    // 데이터에 따라 y축 범위 설정
+    setState(() {
+      switch (widget.title) {
+        case '수면시간':
+          minY = 0;
+          maxY = 12;
+          break;
+        case '심박수':
+          minY = 40;
+          maxY = 120;
+          break;
+        case '칼로리':
+          minY = 100;
+          maxY = 1000;
+          break;
+        case '혈당':
+          minY = 50;
+          maxY = 150;
+          break;
+        case '걸음수':
+          minY = 0;
+          maxY = 20000;
+          break;
+        case '체중':
+          minY = 30;
+          maxY = 150;
+          break;
+        default:
+          minY = 0;
+          maxY = 10;
+          break;
+      }
+    });
   }
 
   @override
@@ -664,7 +695,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             SizedBox(height: 10),
             Row(
               children: [
-                // Numeric part of the data (editable)
                 Expanded(
                   child: TextField(
                     controller: _numericController,
@@ -674,7 +704,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
                   ),
                 ),
                 SizedBox(width: 10),
-                // Unit part of the data (non-editable)
                 Text(
                   unit,
                   style: TextStyle(
@@ -689,7 +718,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ElevatedButton(
               onPressed: () {
                 String updatedData = '${_numericController.text} $unit';
-                Navigator.pop(context, updatedData); // Pass updated data back
+                Navigator.pop(context, updatedData);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
@@ -704,7 +733,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
             SizedBox(height: 16.0),
             Expanded(
-              child: buildChart(chartData), // Build the chart with the data
+              child: buildChart(chartData),
             ),
           ],
         ),
@@ -734,11 +763,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   Widget buildChart(List<FlSpot> chartData) {
     return LineChart(
       LineChartData(
+        minY: minY,
+        maxY: maxY,
         lineBarsData: [
           LineChartBarData(
             spots: chartData,
             isCurved: true,
-            color: Colors.deepPurple, // Specify line color here
+            color: Colors.deepPurple,
             barWidth: 4,
             isStrokeCapRound: true,
             belowBarData: BarAreaData(show: false),
@@ -777,13 +808,13 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
             ),
           ),
           leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false), // Hide left side titles
+            sideTitles: SideTitles(showTitles: false),
           ),
           topTitles: AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: false), // Hide right side titles
+            sideTitles: SideTitles(showTitles: false),
           ),
         ),
         borderData: FlBorderData(
@@ -806,7 +837,7 @@ class _CareTabState extends State<CareTab> {
   List<String> dataItems = [
     '8 hours',
     '70 bpm',
-    '300 kcal',
+    '600 kcal',
     '100 mg/dL',
     '10000 steps',
     '65 kg'
