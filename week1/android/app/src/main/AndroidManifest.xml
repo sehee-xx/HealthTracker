@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     
     <application
-        android:label="week1"
+        android:label="Health Tracker"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
