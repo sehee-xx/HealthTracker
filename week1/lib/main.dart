@@ -1344,6 +1344,7 @@ class WorkoutDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('오늘의 운동'),
+        backgroundColor: Colors.deepPurple,
       ),
       body: nonZeroWorkouts.isEmpty
           ? Center(
@@ -1360,10 +1361,14 @@ class WorkoutDetailsPage extends StatelessWidget {
                       int calories =
                           _calculateCalories(type, duration); // 소모 칼로리 계산
 
-                      return ListTile(
-                        title: Text(type),
-                        subtitle: Text(
-                            '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        child: ListTile(
+                          title: Text(type),
+                          subtitle: Text(
+                              '시간: $duration분, 소모 칼로리: ${calories.toStringAsFixed(2)} kcal'),
+                          leading: _getIconForWorkout(type),
+                        ),
                       );
                     },
                   ),
@@ -1372,12 +1377,31 @@ class WorkoutDetailsPage extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     '총 소모 칼로리: ${totalCalories} kcal',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
                   ),
                 ),
               ],
             ),
     );
+  }
+
+  Icon _getIconForWorkout(String type) {
+    switch (type) {
+      case '러닝':
+        return Icon(Icons.directions_run, color: Colors.deepPurple);
+      case '자전거 타기':
+        return Icon(Icons.directions_bike, color: Colors.deepPurple);
+      case '수영':
+        return Icon(Icons.pool, color: Colors.deepPurple);
+      case '걷기':
+        return Icon(Icons.directions_walk, color: Colors.deepPurple);
+      case '요가':
+        return Icon(Icons.self_improvement, color: Colors.deepPurple);
+      case '웨이트':
+        return Icon(Icons.fitness_center, color: Colors.deepPurple);
+      default:
+        return Icon(Icons.fitness_center, color: Colors.deepPurple);
+    }
   }
 
   int _calculateCalories(String type, int duration) {
@@ -1395,6 +1419,8 @@ class WorkoutDetailsPage extends StatelessWidget {
     return duration * 5; // 기타
   }
 }
+
+
 
 class WorkoutHistoryPage extends StatelessWidget {
   final Map<String, int> workHistory;
@@ -1432,45 +1458,47 @@ class WorkoutHistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('운동 히스토리'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: sortedEntries.length,
-                itemBuilder: (context, index) {
-                  String dateStr = sortedEntries[index].key;
-                  int duration = sortedEntries[index].value;
-                  DateTime date = DateTime.parse(dateStr);
-                  String formattedDate =
-                      DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: sortedEntries.length,
+              itemBuilder: (context, index) {
+                String dateStr = sortedEntries[index].key;
+                int duration = sortedEntries[index].value;
+                DateTime date = DateTime.parse(dateStr);
+                String formattedDate =
+                    DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
 
-                  return ListTile(
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  child: ListTile(
                     title: Text(formattedDate),
-                    subtitle:
-                        Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
-                  );
-                },
-              ),
-            ),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '$consecutiveDays일 연속 운동 완료!',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    subtitle: Text('운동 시간: ${duration ~/ 60}시간 ${duration % 60}분'),
+                    leading: const Icon(Icons.fitness_center, color: Colors.deepPurple),
                   ),
-                  Text(
-                    '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  '$consecutiveDays일 연속 운동 완료!',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '최근 일주일간 $hoursLastWeek시간 $minutesLastWeek분 만큼 운동했습니다.',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
