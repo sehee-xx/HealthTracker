@@ -38,6 +38,9 @@ final Map<String, int> workHistory = {
   '2024-06-28': 60,
 };
 
+
+List<ImageTuple> _images = [];
+
 class ImageTuple {
   final File image;
   final String author;
@@ -114,7 +117,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage>
     with SingleTickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
-  List<ImageTuple> _images = [];
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
 
@@ -229,11 +231,11 @@ class _MyHomePageState extends State<MyHomePage>
     ];
 
     final List<DateTime> imageTimes = [
-      DateTime(2024, 6, 30, 12, 13),
-      DateTime(2024, 6, 30, 18, 12),
-      DateTime(2024, 7, 1, 7, 38),
-      DateTime(2024, 7, 1, 13, 1),
-      DateTime(2024, 7, 1, 16, 0)
+      DateTime(2024, 5, 19, 12, 13),
+      DateTime(2024, 6, 19, 18, 12),
+      DateTime(2024, 6, 28, 7, 38),
+      DateTime(2024, 6, 30, 13, 1),
+      DateTime(2024, 6, 30, 16, 0)
     ];
 
     for (int i = imagePaths.length - 1; i >= 0; i--) {
@@ -394,7 +396,7 @@ class _MyHomePageState extends State<MyHomePage>
             },
           ),
           // 이미지 탭
-          imageGalleryTab(),
+          ImageGalleryTab(),
           // 운동 탭
           const HealthRecordWidget(),
           // // 케어 탭
@@ -449,33 +451,21 @@ class _MyHomePageState extends State<MyHomePage>
     );
   }
 
-  Widget imageGalleryTab() {
-    return _images.isEmpty
-        ? Center(
-            child: Text(
-              '아직 추가된 이미지가 없습니다.',
-              style: TextStyle(color: Colors.grey[700], fontSize: 16),
-            ),
-          )
-        : Padding(
-            padding: const EdgeInsets.all(8),
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 4.0,
-                mainAxisSpacing: 4.0,
-              ),
-              itemCount: _images.length,
-              itemBuilder: (BuildContext context, int index) {
-                return GestureDetector(
-                  onTap: () {
-                    showImage(index);
-                  },
-                  child: Image.file(_images[index].image, fit: BoxFit.cover),
-                );
-              },
-            ),
-          );
+}
+
+class ImageGalleryTab extends StatefulWidget {
+  @override
+  _ImageGalleryState createState() => _ImageGalleryState();
+}
+
+class _ImageGalleryState extends State<ImageGalleryTab> {
+  List<ImageTuple> _filteredImages = [];
+  DateTime? _filterDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredImages = _images;
   }
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
@@ -626,8 +616,8 @@ class _MyHomePageState extends State<MyHomePage>
                           onTap: () {
                             setState(() {
                               _images.removeAt(index);
+                              Navigator.of(context).pop();
                             });
-                            Navigator.of(context).pop();
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -668,6 +658,127 @@ class _MyHomePageState extends State<MyHomePage>
     ).then((_) {
       setState(() {});
     });
+  }
+
+  void _filterImages(DateTime? filterDate) {
+    setState(() {
+      if (filterDate == null) {
+        _filteredImages = _images;
+      } else {
+        _filteredImages = _images.where((image) {
+          return image.timeStamp.isAfter(filterDate);
+        }).toList();
+      }
+    });
+  }
+
+  void _selectFilterDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _filterDate) {
+      setState(() {
+        _filterDate = picked;
+        _filterImages(picked);
+      });
+    }
+  }
+
+  void _applyFilter(int days) {
+    DateTime filterDate = DateTime.now().subtract(Duration(days: days));
+    _filterImages(filterDate);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String result) {
+              switch (result) {
+                case '오늘':
+                  _applyFilter(1);
+                  break;
+                case '7일':
+                  _applyFilter(7);
+                  break;
+                case '30일':
+                  _applyFilter(30);
+                  break;
+                case '날짜 선택':
+                  _selectFilterDate(context);
+                  break;
+                case '전체':
+                  _filterImages(null);
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: '오늘',
+                child: Text('오늘'),
+              ),
+              const PopupMenuItem<String>(
+                value: '7일',
+                child: Text('7일'),
+              ),
+              const PopupMenuItem<String>(
+                value: '30일',
+                child: Text('30일'),
+              ),
+              const PopupMenuItem<String>(
+                value: '전체',
+                child: Text('전체'),
+              ),
+              const PopupMenuItem<String>(
+                value: '날짜 선택',
+                child: Text('날짜 선택'),
+              ),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.filter_list),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: _filteredImages.isEmpty
+                ? Center(
+                    child: Text(
+                      '아직 추가된 이미지가 없습니다.',
+                      style: TextStyle(color: Colors.grey[700], fontSize: 16),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 4.0,
+                        mainAxisSpacing: 4.0,
+                      ),
+                      itemCount: _filteredImages.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return GestureDetector(
+                          onTap: () {
+                            showImage(index);
+                          },
+                          child: Image.file(_filteredImages[index].image, fit: BoxFit.cover),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
