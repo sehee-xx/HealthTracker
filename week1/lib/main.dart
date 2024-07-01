@@ -926,7 +926,6 @@ class _CareTabState extends State<CareTab> {
                 });
               }
             },
-          
             child: buildHealthCard(
               context,
               title,
@@ -1193,7 +1192,6 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
-
   void _addWorkout(String type, int duration) {
     setState(() {
       todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
@@ -1212,7 +1210,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('운동 추가'),
-<<<<<<< HEAD
           content: SingleChildScrollView(
             child: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
@@ -1227,14 +1224,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                           _localSelectedType = newValue!;
                         });
                       },
-                      items: <String>[
-                        '러닝',
-                        '자전거 타기',
-                        '수영',
-                        '걷기',
-                        '요가',
-                        '웨이트'
-                      ].map<DropdownMenuItem<String>>((String value) {
+                      items: <String>['러닝', '자전거 타기', '수영', '걷기', '요가', '웨이트']
+                          .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -1250,37 +1241,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                 );
               },
             ),
-=======
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  DropdownButton<String>(
-                    value: _localSelectedType,
-                    isExpanded: true,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _localSelectedType = newValue!;
-                      });
-                    },
-                    items: <String>['러닝', '자전거 타기', '수영', '걷기', '요가', '웨이트']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  TextField(
-                    controller: _durationController,
-                    decoration: const InputDecoration(labelText: '시간 (분)'),
-                    keyboardType: TextInputType.number,
-                  ),
-                ],
-              );
-            },
->>>>>>> 444ade2 (Modify: 그래프 데이터 수정 시 SingleChildScrollView 추가)
           ),
           actions: <Widget>[
             TextButton(
@@ -1367,22 +1327,9 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         ),
                       ),
                     ),
-<<<<<<< HEAD
                     Text('총 시간: $hours시간 $minutes분',
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
-=======
-                  ),
-                  Text('총 시간: $hours시간 $minutes분',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: legends.take(3).toList(),
-                  ),
-                  if (legends.length > 3)
->>>>>>> 444ade2 (Modify: 그래프 데이터 수정 시 SingleChildScrollView 추가)
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
