@@ -86,14 +86,13 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
-            SizedBox(height: 20),
-            Text(
-              'Health Tracker',
-              style: TextStyle(
-                color: Colors.deepPurple,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+          children: <Widget>[
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: Lottie.asset(
+                'assets/splash.json',
+                repeat: true,
               ),
             ),
           ],

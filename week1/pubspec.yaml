@@ -28,6 +28,7 @@ flutter:
     - assets/contacts.json
     - assets/app_logo.png
     - assets/running_man.json
+    - assets/splash.json
 
 flutter_icons:
   android: true
