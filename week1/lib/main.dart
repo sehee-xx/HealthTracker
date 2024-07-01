@@ -905,7 +905,6 @@ class _CareTabState extends State<CareTab> {
               title = '건강 데이터';
               break;
           }
-
           return GestureDetector(
             onTap: () async {
               final updatedData = await Navigator.push(
@@ -922,6 +921,7 @@ class _CareTabState extends State<CareTab> {
                 });
               }
             },
+          
             child: buildHealthCard(
               context,
               title,
