@@ -1671,16 +1671,31 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     _saveData();
   }
 
-  Future<void> _showAddWorkoutDialog() async {
-    String selectedType = '러닝';
+  void _editWorkout(String type, int duration) {
+    setState(() {
+      if (todayWorkout.containsKey(type)) {
+        todayWorkout[type] = duration;
+        String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+        workHistory[today] = todayWorkout.values.fold(0, (sum, element) => sum + element);
+      }
+    });
+    _saveData();
+  }
+
+  Future<void> _showAddWorkoutDialog({String? typeToEdit}) async {
+    String selectedType = typeToEdit ?? '러닝';
     TextEditingController _durationController = TextEditingController();
     String _localSelectedType = selectedType;
+
+    if (typeToEdit != null) {
+      _durationController.text = todayWorkout[typeToEdit].toString();
+    }
 
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('운동 추가'),
+          title: Text(typeToEdit == null ? '운동 추가' : '운동 수정'),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Column(
@@ -1689,11 +1704,11 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   DropdownButton<String>(
                     value: _localSelectedType,
                     isExpanded: true,
-                    onChanged: (String? newValue) {
+                    onChanged: typeToEdit == null ? (String? newValue) {
                       setState(() {
                         _localSelectedType = newValue!;
                       });
-                    },
+                    } : null,
                     items: <String>[
                       '러닝',
                       '자전거 타기',
@@ -1724,11 +1739,16 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('추가'),
+              child: Text(typeToEdit == null ? '추가' : '수정'),
               onPressed: () {
                 if (_durationController.text.isNotEmpty) {
-                  _addWorkout(
-                      _localSelectedType, int.parse(_durationController.text));
+                  if (typeToEdit == null) {
+                    _addWorkout(
+                        _localSelectedType, int.parse(_durationController.text));
+                  } else {
+                    _editWorkout(
+                        _localSelectedType, int.parse(_durationController.text));
+                  }
                   Navigator.of(context).pop();
                 }
               },
@@ -1767,6 +1787,41 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     );
   }
 
+  void _showEditWorkoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('운동 수정'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+              return ListTile(
+                title: Text('${entry.key}: ${entry.value}분'),
+                trailing: IconButton(
+                  icon: Icon(
+                    Icons.edit,
+                    color: Colors.deepPurple,
+                    ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _showAddWorkoutDialog(typeToEdit: entry.key);
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('닫기'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     int totalMinutes =
@@ -1787,6 +1842,15 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
 
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _showEditWorkoutDialog,
+            color: Colors.deepPurple,
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: totalMinutes > 0
@@ -2015,16 +2079,61 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 }
 
-class WorkoutHistoryPage extends StatelessWidget {
+
+
+class WorkoutHistoryPage extends StatefulWidget {
   final Map<String, int> workHistory;
 
   WorkoutHistoryPage(this.workHistory);
 
   @override
-  Widget build(BuildContext context) {
-    List<MapEntry<String, int>> sortedEntries = workHistory.entries.toList()
-      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+  _WorkoutHistoryPageState createState() => _WorkoutHistoryPageState();
+}
 
+class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
+  String? selectedMonth;
+  List<MapEntry<String, int>> sortedEntries = [];
+  List<MapEntry<String, int>> filteredEntries = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    sortedEntries = widget.workHistory.entries.toList()
+      ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
+    filteredEntries = sortedEntries;
+  }
+
+  void _filterEntriesByMonth(String? month) {
+    setState(() {
+      selectedMonth = month;
+      if (month == null) {
+        filteredEntries = sortedEntries;
+      } else {
+        filteredEntries = sortedEntries.where((entry) {
+          DateTime date = DateTime.parse(entry.key);
+          String entryMonth = DateFormat('yyyy-MM').format(date);
+          return entryMonth == month;
+        }).toList();
+      }
+    });
+  }
+
+  List<DropdownMenuItem<String>> _getMonthDropdownItems() {
+    List<String> months = sortedEntries.map((entry) {
+      DateTime date = DateTime.parse(entry.key);
+      return DateFormat('yyyy-MM').format(date);
+    }).toSet().toList();
+
+    return months.map((month) {
+      return DropdownMenuItem<String>(
+        value: month,
+        child: Text(month),
+      );
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     int totalMinutesLastWeek = 0;
     DateTime? lastDate;
     int streak = 0;
@@ -2052,7 +2161,33 @@ class WorkoutHistoryPage extends StatelessWidget {
         title: const Text('운동 히스토리'),
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
-        actionsIconTheme: IconThemeData(color: Colors.white),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String result) {
+              if (result == '전체') {
+                _filterEntriesByMonth(null);
+              } else {
+                _filterEntriesByMonth(result);
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: '전체',
+                child: Text('전체'),
+              ),
+              ..._getMonthDropdownItems().map((item) {
+                return PopupMenuItem<String>(
+                  value: item.value,
+                  child: item.child,
+                );
+              }).toList(),
+            ],
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.filter_list),
+            ),
+          ),
+        ],
         titleTextStyle: TextStyle(
             color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
       ),
@@ -2060,10 +2195,10 @@ class WorkoutHistoryPage extends StatelessWidget {
         children: [
           Expanded(
             child: ListView.builder(
-              itemCount: sortedEntries.length,
+              itemCount: filteredEntries.length,
               itemBuilder: (context, index) {
-                String dateStr = sortedEntries[index].key;
-                int duration = sortedEntries[index].value;
+                String dateStr = filteredEntries[index].key;
+                int duration = filteredEntries[index].value;
                 DateTime date = DateTime.parse(dateStr);
                 String formattedDate =
                     DateFormat('yyyy-MM-dd (E)', 'ko_KR').format(date);
