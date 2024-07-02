@@ -275,7 +275,7 @@ class _MyHomePageState extends State<MyHomePage>
     final List<String> imagePaths = [
       'assets/pics/image0.jpg',
       'assets/pics/image1.jpg',
-      'assets/pics/image2.jpeg',
+      'assets/pics/image2.jpg',
       'assets/pics/image3.jpg',
       'assets/pics/image4.jpg'
     ];
@@ -286,6 +286,14 @@ class _MyHomePageState extends State<MyHomePage>
       DateTime(2024, 6, 28, 7, 38),
       DateTime(2024, 6, 30, 13, 1),
       DateTime(2024, 6, 30, 16, 0)
+    ];
+
+    final List<String> imageComments = [
+      '아침 식사!',
+      '30분 러닝',
+      '식단 완료',
+      '다리 산책',
+      '오운완!'
     ];
 
     for (int i = imagePaths.length - 1; i >= 0; i--) {
@@ -300,7 +308,7 @@ class _MyHomePageState extends State<MyHomePage>
             file,
             '수지',
             imageTimes[i],
-            '',
+            imageComments[i],
           ),
         );
       });
