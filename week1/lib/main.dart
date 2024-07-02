@@ -12,10 +12,6 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-<<<<<<< HEAD
-
-=======
->>>>>>> e3d2ddc (Modify: 연락처 sharedpreference 적용)
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
@@ -23,8 +19,6 @@ void main() {
   });
 }
 
-<<<<<<< HEAD
-=======
 final Map<String, int> todayWorkout = {
   '러닝': 0,
   '걷기': 0,
@@ -44,7 +38,6 @@ final Map<String, int> workHistory = {
   '2024-06-27': 70,
   '2024-06-28': 60,
 };
->>>>>>> e3d2ddc (Modify: 연락처 sharedpreference 적용)
 
 List<ImageTuple> _images = [];
 
@@ -85,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // 지연 후 페이지 이동
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MyHomePage()),
       );
@@ -159,23 +152,38 @@ class _MyHomePageState extends State<MyHomePage>
   Future<void> _loadContacts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? contactsJson = prefs.getString('contacts');
+    print("Loaded contacts from SharedPreferences: $contactsJson");
 
-    if (contactsJson == null) {
-      String assetContactsJson =
-          await rootBundle.loadString('assets/contacts.json');
-      prefs.setString('contacts', assetContactsJson);
-      contactsJson = assetContactsJson;
+    if (contactsJson == null || contactsJson.isEmpty) {
+      print("SharedPreferences is empty. Loading from assets.");
+      try {
+        String assetContactsJson =
+            await rootBundle.loadString('assets/contacts.json');
+        print("Loaded contacts from assets: $assetContactsJson");
+        await prefs.setString('contacts', assetContactsJson);
+        contactsJson = assetContactsJson;
+      } catch (e) {
+        print("Error loading contacts from assets: $e");
+      }
     }
 
-    List<dynamic> contactsList = json.decode(contactsJson);
-    setState(() {
-      contacts = contactsList.map<Map<String, String>>((contact) {
-        return {
-          'name': contact['name'],
-          'phone': contact['phone'],
-        };
-      }).toList();
-    });
+    if (contactsJson != null && contactsJson.isNotEmpty) {
+      List<dynamic> contactsList = json.decode(contactsJson);
+      print("Decoded contacts list: $contactsList");
+      setState(() {
+        contacts = contactsList.map<Map<String, String>>((contact) {
+          print("Mapping contact: $contact");
+          return {
+            'name': contact['name'],
+            'phone': contact['phone'],
+          };
+        }).toList();
+      });
+    } else {
+      print("contactsJson is null or empty after loading from assets.");
+    }
+
+    print("Contacts set in state: $contacts");
   }
 
   Future<void> _saveContacts() async {
@@ -403,10 +411,16 @@ class _MyHomePageState extends State<MyHomePage>
                           onUpdate: (updatedContact) {
                             setState(() {
                               contacts[index] = updatedContact;
-                              _saveContacts(); // Save contacts to SharedPreferences
                             });
+                            _saveContacts();
                           },
-                          onDelete: () => _deleteContact(index),
+                          onDelete: () {
+                            setState(() {
+                              contacts.removeAt(index);
+                            });
+                            _saveContacts();
+                            Navigator.of(context).pop();
+                          },
                         ),
                       ),
                     );
@@ -1474,8 +1488,10 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      todayWorkout = Map<String, int>.from(json.decode(prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
-      workHistory = Map<String, int>.from(json.decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
+      todayWorkout = Map<String, int>.from(json.decode(
+          prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
+      workHistory = Map<String, int>.from(json
+          .decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
     });
   }
 
