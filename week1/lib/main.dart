@@ -12,7 +12,10 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+<<<<<<< HEAD
 
+=======
+>>>>>>> e3d2ddc (Modify: 연락처 sharedpreference 적용)
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
@@ -20,6 +23,28 @@ void main() {
   });
 }
 
+<<<<<<< HEAD
+=======
+final Map<String, int> todayWorkout = {
+  '러닝': 0,
+  '걷기': 0,
+  '자전거 타기': 0,
+  '수영': 0,
+  '요가': 0,
+  '웨이트': 0,
+  '기타': 0,
+};
+
+final Map<String, int> workHistory = {
+  '2024-06-19': 55,
+  '2024-06-20': 50,
+  '2024-06-23': 80,
+  '2024-06-24': 50,
+  '2024-06-25': 35,
+  '2024-06-27': 70,
+  '2024-06-28': 60,
+};
+>>>>>>> e3d2ddc (Modify: 연락처 sharedpreference 적용)
 
 List<ImageTuple> _images = [];
 
@@ -132,19 +157,31 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Future<void> _loadContacts() async {
-    try {
-      final String response = await DefaultAssetBundle.of(context)
-          .loadString('assets/contacts.json');
-      final List<dynamic> data = json.decode(response);
-      setState(() {
-        contacts = data
-            .map<Map<String, String>>((e) =>
-                {"name": e["name"] as String, "phone": e["phone"] as String})
-            .toList();
-      });
-    } catch (e) {
-      print('Error loading contacts.json: $e');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? contactsJson = prefs.getString('contacts');
+
+    if (contactsJson == null) {
+      String assetContactsJson =
+          await rootBundle.loadString('assets/contacts.json');
+      prefs.setString('contacts', assetContactsJson);
+      contactsJson = assetContactsJson;
     }
+
+    List<dynamic> contactsList = json.decode(contactsJson);
+    setState(() {
+      contacts = contactsList.map<Map<String, String>>((contact) {
+        return {
+          'name': contact['name'],
+          'phone': contact['phone'],
+        };
+      }).toList();
+    });
+  }
+
+  Future<void> _saveContacts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String contactsJson = json.encode(contacts);
+    await prefs.setString('contacts', contactsJson);
   }
 
   void _addOrEditContact({Map<String, String>? contact, int? index}) async {
@@ -162,6 +199,7 @@ class _MyHomePageState extends State<MyHomePage>
         } else {
           contacts.add(result);
         }
+        _saveContacts(); // Save contacts to SharedPreferences
       });
     }
   }
@@ -169,6 +207,7 @@ class _MyHomePageState extends State<MyHomePage>
   void _deleteContact(int index) {
     setState(() {
       contacts.removeAt(index);
+      _saveContacts(); // Save contacts to SharedPreferences
     });
     Navigator.of(context).pop();
   }
@@ -361,14 +400,13 @@ class _MyHomePageState extends State<MyHomePage>
                         builder: (context) => ContactDetailPage(
                           name: contacts[index]['name']!,
                           phone: contacts[index]['phone']!,
-                          onEdit: () => _addOrEditContact(
-                              contact: contacts[index], index: index),
-                          onDelete: () => _deleteContact(index),
                           onUpdate: (updatedContact) {
                             setState(() {
                               contacts[index] = updatedContact;
+                              _saveContacts(); // Save contacts to SharedPreferences
                             });
                           },
+                          onDelete: () => _deleteContact(index),
                         ),
                       ),
                     );
@@ -432,7 +470,6 @@ class _MyHomePageState extends State<MyHomePage>
               : null,
     );
   }
-
 }
 
 class ImageGalleryTab extends StatefulWidget {
@@ -479,8 +516,10 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                             children: [
                               ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.5,
                                 ),
                                 child: Image.file(image, fit: BoxFit.contain),
                               ),
@@ -504,28 +543,34 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                               const SizedBox(height: 10),
                               if (commentAdded)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
                                   child: Column(
                                     children: [
                                       Text(
                                         imageTuple.comments,
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.edit, color: Colors.white),
+                                            icon: const Icon(Icons.edit,
+                                                color: Colors.white),
                                             onPressed: () {
                                               setState(() {
-                                                commentController.text = imageTuple.comments;
+                                                commentController.text =
+                                                    imageTuple.comments;
                                                 commentAdded = false;
                                               });
                                             },
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.white),
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.white),
                                             onPressed: () {
                                               setState(() {
                                                 commentController.text = '';
@@ -541,20 +586,25 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                 ),
                               if (!commentAdded)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
                                   child: Column(
                                     children: [
                                       TextField(
                                         controller: commentController,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                         decoration: const InputDecoration(
                                           hintText: 'Enter your comment',
-                                          hintStyle: TextStyle(color: Colors.white54),
+                                          hintStyle:
+                                              TextStyle(color: Colors.white54),
                                           enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white),
+                                            borderSide:
+                                                BorderSide(color: Colors.white),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white),
+                                            borderSide:
+                                                BorderSide(color: Colors.white),
                                           ),
                                         ),
                                         onTap: () {
@@ -565,7 +615,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                       ElevatedButton(
                                         onPressed: () {
                                           setState(() {
-                                            imageTuple.comments = commentController.text;
+                                            imageTuple.comments =
+                                                commentController.text;
                                             commentAdded = true;
                                           });
                                         },
@@ -624,6 +675,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       setState(() {});
     });
   }
+
   void _confirmDelete(BuildContext context, int index) {
     showDialog(
       context: context,
@@ -631,7 +683,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
         return AlertDialog(
           title: Text(
             '정말 삭제하겠습니까?',
-            style: TextStyle(fontSize:16),
+            style: TextStyle(fontSize: 16),
           ),
           actions: [
             TextButton(
@@ -659,6 +711,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       Navigator.of(context).pop();
     });
   }
+
   void _filterImages(DateTime? filterDate) {
     setState(() {
       if (filterDate == null) {
@@ -758,7 +811,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                 : Padding(
                     padding: const EdgeInsets.all(8),
                     child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 4.0,
                         mainAxisSpacing: 4.0,
@@ -769,7 +823,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                           onTap: () {
                             showImage(index);
                           },
-                          child: Image.file(_filteredImages[index].image, fit: BoxFit.cover),
+                          child: Image.file(_filteredImages[index].image,
+                              fit: BoxFit.cover),
                         );
                       },
                     ),
@@ -1282,7 +1337,7 @@ class _ContactInputDialogState extends State<ContactInputDialog> {
 class ContactDetailPage extends StatelessWidget {
   final String name;
   final String phone;
-  final VoidCallback onEdit;
+  // final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<Map<String, String>> onUpdate;
 
@@ -1290,7 +1345,7 @@ class ContactDetailPage extends StatelessWidget {
     Key? key,
     required this.name,
     required this.phone,
-    required this.onEdit,
+    // required this.onEdit,
     required this.onDelete,
     required this.onUpdate,
   }) : super(key: key);
