@@ -29,7 +29,6 @@ flutter:
     - assets/contacts.json
     - assets/app_logo.png
     - assets/running_man.json
-    - assets/nodata.json
     - assets/splash.json
     - assets/pics/image0.jpg
     - assets/pics/image1.jpg
