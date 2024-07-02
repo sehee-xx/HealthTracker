@@ -288,14 +288,6 @@ class _MyHomePageState extends State<MyHomePage>
       DateTime(2024, 6, 30, 16, 0)
     ];
 
-    final List<String> imageComments = [
-      '아침 식사!',
-      '30분 러닝',
-      '식단 완료',
-      '다리 산책',
-      '오운완!'
-    ];
-
     for (int i = imagePaths.length - 1; i >= 0; i--) {
       final byteData = await rootBundle.load(imagePaths[i]);
       final file = File('${(await getTemporaryDirectory()).path}/image$i.jpg');
@@ -308,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage>
             file,
             '수지',
             imageTimes[i],
-            imageComments[i],
+            '',
           ),
         );
       });
@@ -1852,13 +1844,10 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 200,
-                        height: 200,
-                        child: Lottie.asset(
-                          'assets/nodata.json', // Lottie 애니메이션 파일 경로
-                          repeat: true,
-                        ),
+                      Icon(
+                        Icons.sentiment_dissatisfied,
+                        color: Colors.deepPurple,
+                        size: 80,
                       ),
                       SizedBox(height: 16),
                       Text(
