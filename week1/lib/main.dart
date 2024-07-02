@@ -96,7 +96,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     });
 
-    // clearPreferences();
+    clearPreferences();
   }
 
   Future<void> clearPreferences() async {
@@ -967,6 +967,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     String numericPart = dataParts[0];
     unit = dataParts.length > 1 ? dataParts[1] : '';
     _numericController = TextEditingController(text: numericPart);
+    _initializeChartData();
     _loadChartData();
   }
 
@@ -974,21 +975,6 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
   void dispose() {
     _numericController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadChartData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? savedChartData = prefs.getString('${widget.title}_chartData');
-
-    if (savedChartData != null) {
-      List<dynamic> data = json.decode(savedChartData);
-      chartData =
-          data.map((e) => FlSpot(e[0].toDouble(), e[1].toDouble())).toList();
-    } else {
-      _initializeChartData();
-    }
-
-    setState(() {});
   }
 
   void _initializeChartData() {
@@ -1036,14 +1022,19 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     // 현재 요일의 데이터를 입력 값으로 업데이트
     chartData[currentDayIndex] =
         FlSpot(currentDayIndex.toDouble(), numericData);
+  }
 
-    // Clamp the chart data values to be within minY and maxY
-    chartData = chartData.map((spot) {
-      double yValue = spot.y;
-      if (yValue < minY) yValue = minY;
-      if (yValue > maxY) yValue = maxY;
-      return FlSpot(spot.x, yValue);
-    }).toList();
+  Future<void> _loadChartData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedChartData = prefs.getString('${widget.title}_chartData');
+
+    if (savedChartData != null) {
+      List<dynamic> data = json.decode(savedChartData);
+      setState(() {
+        chartData =
+            data.map((e) => FlSpot(e[0].toDouble(), e[1].toDouble())).toList();
+      });
+    }
   }
 
   Future<void> _saveChartData() async {
@@ -1105,8 +1096,11 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
               ElevatedButton(
                 onPressed: () {
                   String updatedData = '${_numericController.text} $unit';
-                  _updateChartData(
-                      double.tryParse(_numericController.text) ?? 0);
+                  double newValue =
+                      double.tryParse(_numericController.text) ?? 0;
+                  if (newValue < minY) newValue = minY;
+                  if (newValue > maxY) newValue = maxY;
+                  _updateChartData(newValue);
                   Navigator.pop(context, updatedData);
                   _saveChartData();
                 },
@@ -1668,7 +1662,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       if (todayWorkout.containsKey(type)) {
         todayWorkout[type] = duration;
         String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        workHistory[today] = todayWorkout.values.fold(0, (sum, element) => sum + element);
+        workHistory[today] =
+            todayWorkout.values.fold(0, (sum, element) => sum + element);
       }
     });
     _saveData();
@@ -1696,11 +1691,13 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   DropdownButton<String>(
                     value: _localSelectedType,
                     isExpanded: true,
-                    onChanged: typeToEdit == null ? (String? newValue) {
-                      setState(() {
-                        _localSelectedType = newValue!;
-                      });
-                    } : null,
+                    onChanged: typeToEdit == null
+                        ? (String? newValue) {
+                            setState(() {
+                              _localSelectedType = newValue!;
+                            });
+                          }
+                        : null,
                     items: <String>[
                       '러닝',
                       '자전거 타기',
@@ -1735,11 +1732,11 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
               onPressed: () {
                 if (_durationController.text.isNotEmpty) {
                   if (typeToEdit == null) {
-                    _addWorkout(
-                        _localSelectedType, int.parse(_durationController.text));
+                    _addWorkout(_localSelectedType,
+                        int.parse(_durationController.text));
                   } else {
-                    _editWorkout(
-                        _localSelectedType, int.parse(_durationController.text));
+                    _editWorkout(_localSelectedType,
+                        int.parse(_durationController.text));
                   }
                   Navigator.of(context).pop();
                 }
@@ -1787,14 +1784,16 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
           title: const Text('운동 수정'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: todayWorkout.entries.where((entry) => entry.value > 0).map((entry) {
+            children: todayWorkout.entries
+                .where((entry) => entry.value > 0)
+                .map((entry) {
               return ListTile(
                 title: Text('${entry.key}: ${entry.value}분'),
                 trailing: IconButton(
                   icon: Icon(
                     Icons.edit,
                     color: Colors.deepPurple,
-                    ),
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                     _showAddWorkoutDialog(typeToEdit: entry.key);
@@ -1914,11 +1913,18 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         size: 80,
                       ),
                       SizedBox(height: 16),
-                      // Text(
-                      //   '아직 오늘 운동을 시작하지 않았습니다.',
-                      //   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      // ),
-
+                      Text(
+                        '아직 오늘 운동을 시작하지 않았습니다.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Lottie.asset(
+                          'assets/splash.json', // Lottie 애니메이션 파일 경로
+                          repeat: true,
+                        ),
+                      ),
                       SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: _showAddWorkoutDialog,
@@ -2069,8 +2075,6 @@ class WorkoutDetailsPage extends StatelessWidget {
   }
 }
 
-
-
 class WorkoutHistoryPage extends StatefulWidget {
   final Map<String, int> workHistory;
 
@@ -2084,7 +2088,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   String? selectedMonth;
   List<MapEntry<String, int>> sortedEntries = [];
   List<MapEntry<String, int>> filteredEntries = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -2109,10 +2113,13 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   }
 
   List<DropdownMenuItem<String>> _getMonthDropdownItems() {
-    List<String> months = sortedEntries.map((entry) {
-      DateTime date = DateTime.parse(entry.key);
-      return DateFormat('yyyy-MM').format(date);
-    }).toSet().toList();
+    List<String> months = sortedEntries
+        .map((entry) {
+          DateTime date = DateTime.parse(entry.key);
+          return DateFormat('yyyy-MM').format(date);
+        })
+        .toSet()
+        .toList();
 
     return months.map((month) {
       return DropdownMenuItem<String>(
