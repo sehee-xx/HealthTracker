@@ -1844,10 +1844,13 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.sentiment_dissatisfied,
-                        color: Colors.deepPurple,
-                        size: 80,
+                      SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Lottie.asset(
+                          'assets/nodata.json', // Lottie 애니메이션 파일 경로
+                          repeat: true,
+                        ),
                       ),
                       SizedBox(height: 16),
                       Text(
