@@ -30,6 +30,7 @@ flutter:
     - assets/app_logo.png
     - assets/running_man.json
     - assets/splash.json
+    - assets/nodata.json
     - assets/pics/image0.jpg
     - assets/pics/image1.jpg
     - assets/pics/image2.jpg

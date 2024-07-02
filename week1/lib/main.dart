@@ -1914,10 +1914,11 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                         size: 80,
                       ),
                       SizedBox(height: 16),
-                      Text(
-                        '아직 오늘 운동을 시작하지 않았습니다.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      ),
+                      // Text(
+                      //   '아직 오늘 운동을 시작하지 않았습니다.',
+                      //   style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      // ),
+
                       SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: _showAddWorkoutDialog,
