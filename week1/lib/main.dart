@@ -278,6 +278,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       _addImage(File(pickedFile.path), "수지", "");
+      showImageButtons = false;
     }
   }
 
@@ -286,6 +287,7 @@ class _MyHomePageState extends State<MyHomePage>
 
     if (pickedFile != null) {
       _addImage(File(pickedFile.path), "수지", "");
+      showImageButtons = false;
     }
   }
 
@@ -1890,17 +1892,16 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
 
     return Scaffold(
-      appBar: totalMinutes > 0
-          ? AppBar(
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: _showEditWorkoutDialog,
-                  color: Colors.deepPurple,
-                ),
-              ],
-            )
-          : null,
+      appBar: totalMinutes > 0 ?
+      AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: _showEditWorkoutDialog,
+            color: Colors.deepPurple,
+          ),
+        ],
+      ) : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: totalMinutes > 0
@@ -1975,6 +1976,14 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                       Text(
                         '아직 오늘 운동을 시작하지 않았습니다.',
                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                      ),
+                      SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Lottie.asset(
+                          'assets/splash.json', // Lottie 애니메이션 파일 경로
+                          repeat: true,
+                        ),
                       ),
                       SizedBox(height: 32),
                       ElevatedButton(
@@ -2143,9 +2152,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   @override
   void initState() {
     super.initState();
-    sortedEntries = widget.workHistory.entries
-        .where((entry) => entry.value > 0)
-        .toList()
+    sortedEntries = widget.workHistory.entries.where((entry) => entry.value > 0).toList()
       ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
     filteredEntries = sortedEntries;
   }
