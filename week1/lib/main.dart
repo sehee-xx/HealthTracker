@@ -134,7 +134,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
@@ -146,12 +146,18 @@ class _MyHomePageState extends State<MyHomePage>
     "지금이 가장 중요한 순간이다",
     "매일 조금씩 더 나아지자",
     "포기하지 마라",
-    "너 자신을 믿어라"
+    "너 자신을 믿어라",
+    "생각하는 대로 살지 않으면 사는 대로 생각하게 된다",
+    "세상의 변화를 보고 싶다면 나부터 변해야 한다",
+    "시간과 정성을 들이지 않고 얻을 수 있는 결실은 없다",
+    "당신이 작업할 최고의 프로젝트는 바로 당신입니다"
   ];
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
 
   bool showImageButtons = false;
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
@@ -163,11 +169,31 @@ class _MyHomePageState extends State<MyHomePage>
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
     _loadInitialImages(); // 디폴트 이미지 추가
     _loadImages();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
   void toggleImageButtons() {
     setState(() {
       showImageButtons = !showImageButtons;
+      if (showImageButtons) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
     });
   }
 
@@ -314,6 +340,8 @@ class _MyHomePageState extends State<MyHomePage>
       });
     }
   }
+
+  
 
   Future<void> _loadImages() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -518,50 +546,56 @@ class _MyHomePageState extends State<MyHomePage>
         ],
       ),
       floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton(
-              key: ValueKey<int>(0),
-              onPressed: () => _addOrEditContact(),
-              tooltip: '연락처 추가',
-              child: const Icon(Icons.add),
-            )
-          : _tabController.index == 1
-              ? Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: showImageButtons
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                FloatingActionButton(
-                                  key: ValueKey<int>(1),
-                                  onPressed: _pickImageCam,
-                                  child: const Icon(Icons.add_a_photo),
-                                ),
-                                const SizedBox(height: 16),
-                                FloatingActionButton(
-                                  key: ValueKey<int>(2),
-                                  onPressed: _pickImageGal,
-                                  child: const Icon(Icons.photo_library),
-                                ),
-                                const SizedBox(height: 16),
-                                FloatingActionButton(
-                                  key: ValueKey<int>(3),
-                                  onPressed: toggleImageButtons,
-                                  child: const Icon(Icons.remove),
-                                ),
-                              ],
-                            )
-                          : FloatingActionButton(
-                              key: ValueKey<int>(4),
-                              onPressed: toggleImageButtons,
-                              child: const Icon(Icons.add),
-                            ),
+        ? FloatingActionButton(
+            key: ValueKey<int>(0),
+            onPressed: () => _addOrEditContact(),
+            tooltip: '연락처 추가',
+            child: const Icon(Icons.add),
+          )
+        : _tabController.index == 1
+            ? Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: showImageButtons
+                    ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: FloatingActionButton(
+                            key: ValueKey<int>(1),
+                            onPressed: _pickImageCam,
+                            child: const Icon(Icons.add_a_photo),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: FloatingActionButton(
+                            key: ValueKey<int>(2),
+                            onPressed: _pickImageGal,
+                            child: const Icon(Icons.photo_library),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FloatingActionButton(
+                          key: ValueKey<int>(3),
+                          onPressed: toggleImageButtons,
+                          child: const Icon(Icons.remove),
+                        ),
+                      ],
+                    )
+                  : FloatingActionButton(
+                      key: ValueKey<int>(4),
+                      onPressed: toggleImageButtons,
+                      child: const Icon(Icons.add),
                     ),
-                  ],
-                )
-              : null,
+                  ),
+                ],
+              )
+            : null,
     );
   }
 }
