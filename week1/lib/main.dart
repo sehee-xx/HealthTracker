@@ -39,8 +39,6 @@ final Map<String, int> workHistory = {
   '2024-06-28': 60,
 };
 
-List<ImageTuple> _images = [];
-
 class ImageTuple {
   final File image;
   final String author;
@@ -48,6 +46,20 @@ class ImageTuple {
   String comments;
 
   ImageTuple(this.image, this.author, this.timeStamp, this.comments);
+
+  Map<String, dynamic> toJson() => {
+    'imagePath': image.path,
+    'author': author,
+    'timeStamp': timeStamp.toIso8601String(),
+    'comments': comments,
+  };
+
+  factory ImageTuple.fromJson(Map<String, dynamic> json) => ImageTuple(
+    File(json['imagePath']),
+    json['author'],
+    DateTime.parse(json['timeStamp']),
+    json['comments'],
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -119,6 +131,8 @@ class _MyHomePageState extends State<MyHomePage>
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
+  List<ImageTuple> _images = [];
+  List<ImageTuple> defaultImageset = [];
 
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
@@ -141,6 +155,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
     _loadInitialImages(); // 디폴트 이미지 추가
+    _loadImages();
   }
 
   void toggleImageButtons() {
@@ -229,10 +244,7 @@ class _MyHomePageState extends State<MyHomePage>
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      setState(() {
-        _images.insert(
-            0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
-      });
+      _addImage(File(pickedFile.path), "수지", "");
     }
   }
 
@@ -240,10 +252,7 @@ class _MyHomePageState extends State<MyHomePage>
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        _images.insert(
-            0, ImageTuple(File(pickedFile.path), "수지", DateTime.now(), ""));
-      });
+      _addImage(File(pickedFile.path), "수지", "");
     }
   }
 
@@ -279,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage>
           .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
 
       setState(() {
-        _images.add(
+        defaultImageset.add(
           ImageTuple(
             file,
             '수지',
@@ -290,6 +299,31 @@ class _MyHomePageState extends State<MyHomePage>
       });
     }
   }
+
+  Future<void> _loadImages() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> jsonList = prefs.getStringList('images') ?? [];
+    if (jsonList.isEmpty) {
+      setState(() {
+        _images = defaultImageset;
+      });
+    } else {
+      setState(() {
+        _images = jsonList.map((jsonStr) => ImageTuple.fromJson(json.decode(jsonStr))).toList();
+      });
+    }
+  }
+
+  Future<void> _addImage(File imageFile, String author, String comments) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    ImageTuple newImage = ImageTuple(imageFile, author, DateTime.now(), comments);
+    setState(() {
+      _images.insert(0,newImage);
+      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      prefs.setStringList('images', jsonList);
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -458,7 +492,7 @@ class _MyHomePageState extends State<MyHomePage>
             },
           ),
           // 이미지 탭
-          ImageGalleryTab(),
+          ImageGalleryTab(images: _images),
           // 운동 탭
           const HealthRecordWidget(),
           // 케어 탭
@@ -515,19 +549,26 @@ class _MyHomePageState extends State<MyHomePage>
 }
 
 class ImageGalleryTab extends StatefulWidget {
+  final List<ImageTuple> images;
+  ImageGalleryTab({required this.images});
+
   @override
   _ImageGalleryState createState() => _ImageGalleryState();
 }
 
 class _ImageGalleryState extends State<ImageGalleryTab> {
+  List<ImageTuple> _images = [];
   List<ImageTuple> _filteredImages = [];
   DateTime? _filterDate;
 
   @override
   void initState() {
     super.initState();
+    _images = widget.images;
     _filteredImages = _images;
   }
+
+
 
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
@@ -616,7 +657,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                             onPressed: () {
                                               setState(() {
                                                 commentController.text = '';
-                                                imageTuple.comments = '';
+                                                editComment(index, '');
                                                 commentAdded = false;
                                               });
                                             },
@@ -657,8 +698,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                       ElevatedButton(
                                         onPressed: () {
                                           setState(() {
-                                            imageTuple.comments =
-                                                commentController.text;
+                                            editComment(index, commentController.text);
+
                                             commentAdded = true;
                                           });
                                         },
@@ -717,6 +758,15 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       setState(() {});
     });
   }
+  
+  Future<void> editComment(int index, String newComment) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _images[index].comments = newComment;
+      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      prefs.setStringList('images', jsonList);
+    });
+  }
 
   void _confirmDelete(BuildContext context, int index) {
     showDialog(
@@ -746,9 +796,12 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
     );
   }
 
-  void _deleteImage(BuildContext context, int index) {
+  Future<void> _deleteImage(BuildContext context, int index) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _filteredImages.removeAt(index);
+      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      prefs.setStringList('images', jsonList);
       Navigator.of(context).pop();
       Navigator.of(context).pop();
     });
