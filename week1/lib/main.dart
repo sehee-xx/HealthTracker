@@ -21,8 +21,6 @@ void main() {
 }
 
 
-List<ImageTuple> _images = [];
-
 class ImageTuple {
   final File image;
   final String author;
@@ -101,6 +99,7 @@ class _MyHomePageState extends State<MyHomePage>
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
+  List<ImageTuple> _images = [];
 
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
@@ -123,6 +122,7 @@ class _MyHomePageState extends State<MyHomePage>
     });
     _loadContacts(); // JSON 데이터를 불러오는 함수 호출
     _loadInitialImages(); // 디폴트 이미지 추가
+    _loadImages();
   }
 
   void toggleImageButtons() {
@@ -237,6 +237,13 @@ class _MyHomePageState extends State<MyHomePage>
         );
       });
     }
+  }
+
+  Future<void> _loadImages() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _images = prefs.getStringList
+    });
   }
 
   @override
