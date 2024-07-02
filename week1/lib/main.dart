@@ -11,32 +11,14 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
     runApp(MyApp());
   });
 }
-
-final Map<String, int> todayWorkout = {
-  '러닝': 0,
-  '걷기': 0,
-  '자전거 타기': 0,
-  '수영': 0,
-  '요가': 0,
-  '웨이트': 0,
-  '기타': 0,
-};
-
-final Map<String, int> workHistory = {
-  '2024-06-19': 55,
-  '2024-06-20': 50,
-  '2024-06-23': 80,
-  '2024-06-24': 50,
-  '2024-06-25': 35,
-  '2024-06-27': 70,
-  '2024-06-28': 60,
-};
 
 
 List<ImageTuple> _images = [];
@@ -1408,12 +1390,53 @@ class HealthRecordWidget extends StatefulWidget {
 }
 
 class _HealthRecordWidgetState extends State<HealthRecordWidget> {
+  Map<String, int> todayWorkout = {
+    '러닝': 0,
+    '걷기': 0,
+    '자전거 타기': 0,
+    '수영': 0,
+    '요가': 0,
+    '웨이트': 0,
+    '기타': 0,
+  };
+
+  Map<String, int> workHistory = {
+    '2024-06-19': 55,
+    '2024-06-20': 50,
+    '2024-06-23': 80,
+    '2024-06-24': 50,
+    '2024-06-25': 35,
+    '2024-06-27': 70,
+    '2024-06-28': 60,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      todayWorkout = Map<String, int>.from(json.decode(prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
+      workHistory = Map<String, int>.from(json.decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
+    });
+  }
+
+  Future<void> _saveData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('todayWorkout', json.encode(todayWorkout));
+    prefs.setString('workHistory', json.encode(workHistory));
+  }
+
   void _addWorkout(String type, int duration) {
     setState(() {
       todayWorkout[type] = (todayWorkout[type] ?? 0) + duration;
       String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
       workHistory[today] = (workHistory[today] ?? 0) + duration;
     });
+    _saveData();
   }
 
   Future<void> _showAddWorkoutDialog() async {
