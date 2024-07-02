@@ -13,13 +13,31 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
     runApp(MyApp());
   });
 }
 
+final Map<String, int> todayWorkout = {
+  '러닝': 0,
+  '걷기': 0,
+  '자전거 타기': 0,
+  '수영': 0,
+  '요가': 0,
+  '웨이트': 0,
+  '기타': 0,
+};
+
+final Map<String, int> workHistory = {
+  '2024-06-19': 55,
+  '2024-06-20': 50,
+  '2024-06-23': 80,
+  '2024-06-24': 50,
+  '2024-06-25': 35,
+  '2024-06-27': 70,
+  '2024-06-28': 60,
+};
 
 class ImageTuple {
   final File image;
@@ -72,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // 지연 후 페이지 이동
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const MyHomePage()),
       );
@@ -147,19 +165,51 @@ class _MyHomePageState extends State<MyHomePage>
   }
 
   Future<void> _loadContacts() async {
-    try {
-      final String response = await DefaultAssetBundle.of(context)
-          .loadString('assets/contacts.json');
-      final List<dynamic> data = json.decode(response);
-      setState(() {
-        contacts = data
-            .map<Map<String, String>>((e) =>
-                {"name": e["name"] as String, "phone": e["phone"] as String})
-            .toList();
-      });
-    } catch (e) {
-      print('Error loading contacts.json: $e');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? contactsJson = prefs.getString('contacts');
+    print("Loaded contacts from SharedPreferences: $contactsJson");
+
+    if (contactsJson == null || contactsJson.isEmpty) {
+      print("SharedPreferences is empty. Loading from assets.");
+      try {
+        String assetContactsJson =
+            await rootBundle.loadString('assets/contacts.json');
+        print("Loaded contacts from assets: $assetContactsJson");
+        await prefs.setString('contacts', assetContactsJson);
+        contactsJson = assetContactsJson;
+        print("Contacts saved to SharedPreferences: $contactsJson");
+      } catch (e) {
+        print("Error loading contacts from assets: $e");
+        return; // 에러가 발생한 경우에는 더 이상 진행하지 않도록 리턴합니다.
+      }
     }
+
+    if (contactsJson != null && contactsJson.isNotEmpty) {
+      try {
+        List<dynamic> contactsList = json.decode(contactsJson);
+        print("Decoded contacts list: $contactsList");
+        setState(() {
+          contacts = contactsList.map<Map<String, String>>((contact) {
+            print("Mapping contact: $contact");
+            return {
+              'name': contact['name'],
+              'phone': contact['phone'],
+            };
+          }).toList();
+        });
+        print("Contacts set in state: $contacts");
+      } catch (e) {
+        print("Error decoding contacts JSON: $e");
+      }
+    } else {
+      print("contactsJson is null or empty after loading from assets.");
+    }
+  }
+
+  Future<void> _saveContacts() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String contactsJson = json.encode(contacts);
+    await prefs.setString('contacts', contactsJson);
   }
 
   void _addOrEditContact({Map<String, String>? contact, int? index}) async {
@@ -177,6 +227,7 @@ class _MyHomePageState extends State<MyHomePage>
         } else {
           contacts.add(result);
         }
+        _saveContacts(); // Save contacts to SharedPreferences
       });
     }
   }
@@ -184,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage>
   void _deleteContact(int index) {
     setState(() {
       contacts.removeAt(index);
+      _saveContacts(); // Save contacts to SharedPreferences
     });
     Navigator.of(context).pop();
   }
@@ -382,12 +434,35 @@ class _MyHomePageState extends State<MyHomePage>
             itemCount: contacts.length,
             itemBuilder: (context, index) {
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: ListTile(
-                  title: Text(contacts[index]['name']!),
-                  subtitle: Text(contacts[index]['phone']!),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   leading:
                       const Icon(Icons.contact_phone, color: Colors.deepPurple),
+                  title: Text(
+                    contacts[index]['name']!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    contacts[index]['phone']!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.deepPurple,
+                    size: 16,
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -395,13 +470,18 @@ class _MyHomePageState extends State<MyHomePage>
                         builder: (context) => ContactDetailPage(
                           name: contacts[index]['name']!,
                           phone: contacts[index]['phone']!,
-                          onEdit: () => _addOrEditContact(
-                              contact: contacts[index], index: index),
-                          onDelete: () => _deleteContact(index),
                           onUpdate: (updatedContact) {
                             setState(() {
                               contacts[index] = updatedContact;
                             });
+                            _saveContacts();
+                          },
+                          onDelete: () {
+                            setState(() {
+                              contacts.removeAt(index);
+                            });
+                            _saveContacts();
+                            Navigator.of(context).pop();
                           },
                         ),
                       ),
@@ -415,7 +495,7 @@ class _MyHomePageState extends State<MyHomePage>
           ImageGalleryTab(images: _images),
           // 운동 탭
           const HealthRecordWidget(),
-          // // 케어 탭
+          // 케어 탭
           CareTab(),
         ],
       ),
@@ -466,7 +546,6 @@ class _MyHomePageState extends State<MyHomePage>
               : null,
     );
   }
-
 }
 
 class ImageGalleryTab extends StatefulWidget {
@@ -520,8 +599,10 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                             children: [
                               ConstrainedBox(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.8,
-                                  maxHeight: MediaQuery.of(context).size.height * 0.5,
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.8,
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.5,
                                 ),
                                 child: Image.file(image, fit: BoxFit.contain),
                               ),
@@ -545,28 +626,34 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                               const SizedBox(height: 10),
                               if (commentAdded)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
                                   child: Column(
                                     children: [
                                       Text(
                                         imageTuple.comments,
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
                                           IconButton(
-                                            icon: const Icon(Icons.edit, color: Colors.white),
+                                            icon: const Icon(Icons.edit,
+                                                color: Colors.white),
                                             onPressed: () {
                                               setState(() {
-                                                commentController.text = imageTuple.comments;
+                                                commentController.text =
+                                                    imageTuple.comments;
                                                 commentAdded = false;
                                               });
                                             },
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.delete, color: Colors.white),
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.white),
                                             onPressed: () {
                                               setState(() {
                                                 commentController.text = '';
@@ -582,20 +669,25 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                 ),
                               if (!commentAdded)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
                                   child: Column(
                                     children: [
                                       TextField(
                                         controller: commentController,
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                         decoration: const InputDecoration(
                                           hintText: 'Enter your comment',
-                                          hintStyle: TextStyle(color: Colors.white54),
+                                          hintStyle:
+                                              TextStyle(color: Colors.white54),
                                           enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white),
+                                            borderSide:
+                                                BorderSide(color: Colors.white),
                                           ),
                                           focusedBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.white),
+                                            borderSide:
+                                                BorderSide(color: Colors.white),
                                           ),
                                         ),
                                         onTap: () {
@@ -607,6 +699,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                         onPressed: () {
                                           setState(() {
                                             editComment(index, commentController.text);
+
                                             commentAdded = true;
                                           });
                                         },
@@ -665,7 +758,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       setState(() {});
     });
   }
-
+  
   Future<void> editComment(int index, String newComment) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -682,7 +775,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
         return AlertDialog(
           title: Text(
             '정말 삭제하겠습니까?',
-            style: TextStyle(fontSize:16),
+            style: TextStyle(fontSize: 16),
           ),
           actions: [
             TextButton(
@@ -713,6 +806,7 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       Navigator.of(context).pop();
     });
   }
+
   void _filterImages(DateTime? filterDate) {
     setState(() {
       if (filterDate == null) {
@@ -812,7 +906,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                 : Padding(
                     padding: const EdgeInsets.all(8),
                     child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 4.0,
                         mainAxisSpacing: 4.0,
@@ -823,7 +918,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                           onTap: () {
                             showImage(index);
                           },
-                          child: Image.file(_filteredImages[index].image, fit: BoxFit.cover),
+                          child: Image.file(_filteredImages[index].image,
+                              fit: BoxFit.cover),
                         );
                       },
                     ),
@@ -1167,8 +1263,10 @@ class _CareTabState extends State<CareTab> {
               final updatedData = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      HealthDetailPage(title: title, data: dataItems[index]),
+                  builder: (_) => HealthDetailPage(
+                    title: title,
+                    data: dataItems[index],
+                  ),
                 ),
               );
               if (updatedData != null) {
@@ -1336,7 +1434,7 @@ class _ContactInputDialogState extends State<ContactInputDialog> {
 class ContactDetailPage extends StatelessWidget {
   final String name;
   final String phone;
-  final VoidCallback onEdit;
+  // final VoidCallback onEdit;
   final VoidCallback onDelete;
   final ValueChanged<Map<String, String>> onUpdate;
 
@@ -1344,7 +1442,7 @@ class ContactDetailPage extends StatelessWidget {
     Key? key,
     required this.name,
     required this.phone,
-    required this.onEdit,
+    // required this.onEdit,
     required this.onDelete,
     required this.onUpdate,
   }) : super(key: key);
@@ -1473,8 +1571,10 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      todayWorkout = Map<String, int>.from(json.decode(prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
-      workHistory = Map<String, int>.from(json.decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
+      todayWorkout = Map<String, int>.from(json.decode(
+          prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
+      workHistory = Map<String, int>.from(json
+          .decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
     });
   }
 
