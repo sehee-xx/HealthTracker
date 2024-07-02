@@ -162,28 +162,33 @@ class _MyHomePageState extends State<MyHomePage>
         print("Loaded contacts from assets: $assetContactsJson");
         await prefs.setString('contacts', assetContactsJson);
         contactsJson = assetContactsJson;
+        print("Contacts saved to SharedPreferences: $contactsJson");
       } catch (e) {
         print("Error loading contacts from assets: $e");
+        return; // 에러가 발생한 경우에는 더 이상 진행하지 않도록 리턴합니다.
       }
     }
 
     if (contactsJson != null && contactsJson.isNotEmpty) {
-      List<dynamic> contactsList = json.decode(contactsJson);
-      print("Decoded contacts list: $contactsList");
-      setState(() {
-        contacts = contactsList.map<Map<String, String>>((contact) {
-          print("Mapping contact: $contact");
-          return {
-            'name': contact['name'],
-            'phone': contact['phone'],
-          };
-        }).toList();
-      });
+      try {
+        List<dynamic> contactsList = json.decode(contactsJson);
+        print("Decoded contacts list: $contactsList");
+        setState(() {
+          contacts = contactsList.map<Map<String, String>>((contact) {
+            print("Mapping contact: $contact");
+            return {
+              'name': contact['name'],
+              'phone': contact['phone'],
+            };
+          }).toList();
+        });
+        print("Contacts set in state: $contacts");
+      } catch (e) {
+        print("Error decoding contacts JSON: $e");
+      }
     } else {
       print("contactsJson is null or empty after loading from assets.");
     }
-
-    print("Contacts set in state: $contacts");
   }
 
   Future<void> _saveContacts() async {
