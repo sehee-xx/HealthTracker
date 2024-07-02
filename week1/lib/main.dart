@@ -95,6 +95,13 @@ class _SplashScreenState extends State<SplashScreen> {
         MaterialPageRoute(builder: (_) => const MyHomePage()),
       );
     });
+
+    // clearPreferences();
+  }
+
+  Future<void> clearPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 
   @override
