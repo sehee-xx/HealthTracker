@@ -133,8 +133,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
-    with TickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   final ImagePicker _picker = ImagePicker();
   late TabController _tabController;
@@ -339,8 +338,6 @@ class _MyHomePageState extends State<MyHomePage>
     }
   }
 
-  
-
   Future<void> _loadImages() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> jsonList = prefs.getStringList('images') ?? [];
@@ -544,56 +541,56 @@ class _MyHomePageState extends State<MyHomePage>
         ],
       ),
       floatingActionButton: _tabController.index == 0
-        ? FloatingActionButton(
-            key: ValueKey<int>(0),
-            onPressed: () => _addOrEditContact(),
-            tooltip: '연락처 추가',
-            child: const Icon(Icons.add),
-          )
-        : _tabController.index == 1
-            ? Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: showImageButtons
-                    ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SlideTransition(
-                          position: _slideAnimation,
-                          child: FloatingActionButton(
-                            key: ValueKey<int>(1),
-                            onPressed: _pickImageCam,
-                            child: const Icon(Icons.add_a_photo),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SlideTransition(
-                          position: _slideAnimation,
-                          child: FloatingActionButton(
-                            key: ValueKey<int>(2),
-                            onPressed: _pickImageGal,
-                            child: const Icon(Icons.photo_library),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        FloatingActionButton(
-                          key: ValueKey<int>(3),
-                          onPressed: toggleImageButtons,
-                          child: const Icon(Icons.remove),
-                        ),
-                      ],
-                    )
-                  : FloatingActionButton(
-                      key: ValueKey<int>(4),
-                      onPressed: toggleImageButtons,
-                      child: const Icon(Icons.add),
+          ? FloatingActionButton(
+              key: ValueKey<int>(0),
+              onPressed: () => _addOrEditContact(),
+              tooltip: '연락처 추가',
+              child: const Icon(Icons.add),
+            )
+          : _tabController.index == 1
+              ? Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: showImageButtons
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SlideTransition(
+                                  position: _slideAnimation,
+                                  child: FloatingActionButton(
+                                    key: ValueKey<int>(1),
+                                    onPressed: _pickImageCam,
+                                    child: const Icon(Icons.add_a_photo),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                SlideTransition(
+                                  position: _slideAnimation,
+                                  child: FloatingActionButton(
+                                    key: ValueKey<int>(2),
+                                    onPressed: _pickImageGal,
+                                    child: const Icon(Icons.photo_library),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                FloatingActionButton(
+                                  key: ValueKey<int>(3),
+                                  onPressed: toggleImageButtons,
+                                  child: const Icon(Icons.remove),
+                                ),
+                              ],
+                            )
+                          : FloatingActionButton(
+                              key: ValueKey<int>(4),
+                              onPressed: toggleImageButtons,
+                              child: const Icon(Icons.add),
+                            ),
                     ),
-                  ),
-                ],
-              )
-            : null,
+                  ],
+                )
+              : null,
     );
   }
 }
@@ -1888,16 +1885,17 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
 
     return Scaffold(
-      appBar: totalMinutes > 0 ?
-      AppBar(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _showEditWorkoutDialog,
-            color: Colors.deepPurple,
-          ),
-        ],
-      ) : null,
+      appBar: totalMinutes > 0
+          ? AppBar(
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: _showEditWorkoutDialog,
+                  color: Colors.deepPurple,
+                ),
+              ],
+            )
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: totalMinutes > 0
@@ -2140,7 +2138,9 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   @override
   void initState() {
     super.initState();
-    sortedEntries = widget.workHistory.entries.where((entry) => entry.value > 0).toList()
+    sortedEntries = widget.workHistory.entries
+        .where((entry) => entry.value > 0)
+        .toList()
       ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
     filteredEntries = sortedEntries;
   }
