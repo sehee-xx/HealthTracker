@@ -400,12 +400,35 @@ class _MyHomePageState extends State<MyHomePage>
             itemCount: contacts.length,
             itemBuilder: (context, index) {
               return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 child: ListTile(
-                  title: Text(contacts[index]['name']!),
-                  subtitle: Text(contacts[index]['phone']!),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   leading:
                       const Icon(Icons.contact_phone, color: Colors.deepPurple),
+                  title: Text(
+                    contacts[index]['name']!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    contacts[index]['phone']!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.deepPurple,
+                    size: 16,
+                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -438,7 +461,7 @@ class _MyHomePageState extends State<MyHomePage>
           ImageGalleryTab(),
           // 운동 탭
           const HealthRecordWidget(),
-          // // 케어 탭
+          // 케어 탭
           CareTab(),
         ],
       ),
@@ -1187,8 +1210,10 @@ class _CareTabState extends State<CareTab> {
               final updatedData = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      HealthDetailPage(title: title, data: dataItems[index]),
+                  builder: (_) => HealthDetailPage(
+                    title: title,
+                    data: dataItems[index],
+                  ),
                 ),
               );
               if (updatedData != null) {
