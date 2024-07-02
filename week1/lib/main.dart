@@ -48,18 +48,18 @@ class ImageTuple {
   ImageTuple(this.image, this.author, this.timeStamp, this.comments);
 
   Map<String, dynamic> toJson() => {
-    'imagePath': image.path,
-    'author': author,
-    'timeStamp': timeStamp.toIso8601String(),
-    'comments': comments,
-  };
+        'imagePath': image.path,
+        'author': author,
+        'timeStamp': timeStamp.toIso8601String(),
+        'comments': comments,
+      };
 
   factory ImageTuple.fromJson(Map<String, dynamic> json) => ImageTuple(
-    File(json['imagePath']),
-    json['author'],
-    DateTime.parse(json['timeStamp']),
-    json['comments'],
-  );
+        File(json['imagePath']),
+        json['author'],
+        DateTime.parse(json['timeStamp']),
+        json['comments'],
+      );
 }
 
 class MyApp extends StatelessWidget {
@@ -309,21 +309,24 @@ class _MyHomePageState extends State<MyHomePage>
       });
     } else {
       setState(() {
-        _images = jsonList.map((jsonStr) => ImageTuple.fromJson(json.decode(jsonStr))).toList();
+        _images = jsonList
+            .map((jsonStr) => ImageTuple.fromJson(json.decode(jsonStr)))
+            .toList();
       });
     }
   }
 
   Future<void> _addImage(File imageFile, String author, String comments) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    ImageTuple newImage = ImageTuple(imageFile, author, DateTime.now(), comments);
+    ImageTuple newImage =
+        ImageTuple(imageFile, author, DateTime.now(), comments);
     setState(() {
-      _images.insert(0,newImage);
-      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      _images.insert(0, newImage);
+      List<String> jsonList =
+          _images.map((image) => json.encode(image.toJson())).toList();
       prefs.setStringList('images', jsonList);
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -568,8 +571,6 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
     _filteredImages = _images;
   }
 
-
-
   // 눌러서 이미지 확대, 다시 한 번 터치 시 꺼짐
   void showImage(int index) {
     ImageTuple imageTuple = _images[index];
@@ -698,7 +699,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
                                       ElevatedButton(
                                         onPressed: () {
                                           setState(() {
-                                            editComment(index, commentController.text);
+                                            editComment(
+                                                index, commentController.text);
 
                                             commentAdded = true;
                                           });
@@ -758,12 +760,13 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
       setState(() {});
     });
   }
-  
+
   Future<void> editComment(int index, String newComment) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _images[index].comments = newComment;
-      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      List<String> jsonList =
+          _images.map((image) => json.encode(image.toJson())).toList();
       prefs.setStringList('images', jsonList);
     });
   }
@@ -800,7 +803,8 @@ class _ImageGalleryState extends State<ImageGalleryTab> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _filteredImages.removeAt(index);
-      List<String> jsonList = _images.map((image) => json.encode(image.toJson())).toList();
+      List<String> jsonList =
+          _images.map((image) => json.encode(image.toJson())).toList();
       prefs.setStringList('images', jsonList);
       Navigator.of(context).pop();
       Navigator.of(context).pop();
@@ -945,7 +949,7 @@ class HealthDetailPage extends StatefulWidget {
 class _HealthDetailPageState extends State<HealthDetailPage> {
   late TextEditingController _numericController;
   late String unit;
-  late List<FlSpot> chartData;
+  List<FlSpot> chartData = [];
   double minY = 0;
   double maxY = 30; // 기본값, 데이터에 따라 다르게 설정
 
@@ -956,7 +960,7 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     String numericPart = dataParts[0];
     unit = dataParts.length > 1 ? dataParts[1] : '';
     _numericController = TextEditingController(text: numericPart);
-    _updateChartData();
+    _loadChartData();
   }
 
   @override
@@ -965,60 +969,81 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
     super.dispose();
   }
 
-  void _updateChartData() {
+  Future<void> _loadChartData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedChartData = prefs.getString('${widget.title}_chartData');
+
+    if (savedChartData != null) {
+      List<dynamic> data = json.decode(savedChartData);
+      chartData =
+          data.map((e) => FlSpot(e[0].toDouble(), e[1].toDouble())).toList();
+    } else {
+      _initializeChartData();
+    }
+
+    setState(() {});
+  }
+
+  void _initializeChartData() {
     int currentDayIndex = DateTime.now().weekday - 1;
     double numericData = double.tryParse(_numericController.text) ?? 0;
 
-    setState(() {
-      // 데이터에 따라 y축 범위 설정
-      switch (widget.title) {
-        case '수면시간':
-          minY = 0;
-          maxY = 12;
-          break;
-        case '심박수':
-          minY = 40;
-          maxY = 120;
-          break;
-        case '칼로리':
-          minY = 0;
-          maxY = 2000;
-          break;
-        case '혈당':
-          minY = 50;
-          maxY = 150;
-          break;
-        case '걸음수':
-          minY = 0;
-          maxY = 20000;
-          break;
-        case '체중':
-          minY = 10;
-          maxY = 150;
-          break;
-        default:
-          minY = 0;
-          maxY = 10;
-          break;
-      }
-      // 차트 데이터 초기화 (평균값으로 설정)
-      double initialValue = (minY + maxY) / 2;
-      chartData = List.generate(7, (index) {
-        return FlSpot(index.toDouble(), initialValue);
-      });
+    // 데이터에 따라 y축 범위 설정
+    switch (widget.title) {
+      case '수면시간':
+        minY = 0;
+        maxY = 12;
+        break;
+      case '심박수':
+        minY = 40;
+        maxY = 120;
+        break;
+      case '칼로리':
+        minY = 0;
+        maxY = 2000;
+        break;
+      case '혈당':
+        minY = 50;
+        maxY = 150;
+        break;
+      case '걸음수':
+        minY = 0;
+        maxY = 20000;
+        break;
+      case '체중':
+        minY = 10;
+        maxY = 150;
+        break;
+      default:
+        minY = 0;
+        maxY = 10;
+        break;
+    }
 
-      // 현재 요일의 데이터를 입력 값으로 업데이트
-      chartData[currentDayIndex] =
-          FlSpot(currentDayIndex.toDouble(), numericData);
-
-      // Clamp the chart data values to be within minY and maxY
-      chartData = chartData.map((spot) {
-        double yValue = spot.y;
-        if (yValue < minY) yValue = minY;
-        if (yValue > maxY) yValue = maxY;
-        return FlSpot(spot.x, yValue);
-      }).toList();
+    // 차트 데이터 초기화 (평균값으로 설정)
+    double initialValue = (minY + maxY) / 2;
+    chartData = List.generate(7, (index) {
+      return FlSpot(index.toDouble(), initialValue);
     });
+
+    // 현재 요일의 데이터를 입력 값으로 업데이트
+    chartData[currentDayIndex] =
+        FlSpot(currentDayIndex.toDouble(), numericData);
+
+    // Clamp the chart data values to be within minY and maxY
+    chartData = chartData.map((spot) {
+      double yValue = spot.y;
+      if (yValue < minY) yValue = minY;
+      if (yValue > maxY) yValue = maxY;
+      return FlSpot(spot.x, yValue);
+    }).toList();
+  }
+
+  Future<void> _saveChartData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<List<double>> data =
+        chartData.map((spot) => [spot.x, spot.y]).toList();
+    await prefs.setString('${widget.title}_chartData', json.encode(data));
   }
 
   @override
@@ -1073,7 +1098,10 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
               ElevatedButton(
                 onPressed: () {
                   String updatedData = '${_numericController.text} $unit';
+                  _updateChartData(
+                      double.tryParse(_numericController.text) ?? 0);
                   Navigator.pop(context, updatedData);
+                  _saveChartData();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
@@ -1096,6 +1124,14 @@ class _HealthDetailPageState extends State<HealthDetailPage> {
         ),
       ),
     );
+  }
+
+  void _updateChartData(double newValue) {
+    int currentDayIndex = DateTime.now().weekday - 1;
+
+    setState(() {
+      chartData[currentDayIndex] = FlSpot(currentDayIndex.toDouble(), newValue);
+    });
   }
 
   IconData _getIconForTitle(String title) {
@@ -1201,6 +1237,31 @@ class _CareTabState extends State<CareTab> {
   ]; // Initial data items
 
   @override
+  void initState() {
+    super.initState();
+    _loadDataItems();
+  }
+
+  Future<void> _loadDataItems() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> keys = ['수면시간', '심박수', '칼로리', '혈당', '걸음수', '체중'];
+
+    for (int i = 0; i < keys.length; i++) {
+      String? value = prefs.getString(keys[i]);
+      if (value != null) {
+        setState(() {
+          dataItems[i] = value;
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDataItem(String title, String data) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(title, data);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
@@ -1274,6 +1335,7 @@ class _CareTabState extends State<CareTab> {
                 setState(() {
                   dataItems[index] = updatedData;
                 });
+                _saveDataItem(title, updatedData);
               }
             },
             child: buildHealthCard(
@@ -1321,6 +1383,7 @@ class _CareTabState extends State<CareTab> {
               setState(() {
                 dataItems[index] = updatedData;
               });
+              _saveDataItem(title, updatedData);
             }
           },
           child: Container(
