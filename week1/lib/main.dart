@@ -147,10 +147,6 @@ class _MyHomePageState extends State<MyHomePage>
     "매일 조금씩 더 나아지자",
     "포기하지 마라",
     "너 자신을 믿어라",
-    "생각하는 대로 살지 않으면 사는 대로 생각하게 된다",
-    "세상의 변화를 보고 싶다면 나부터 변해야 한다",
-    "시간과 정성을 들이지 않고 얻을 수 있는 결실은 없다",
-    "당신이 작업할 최고의 프로젝트는 바로 당신입니다"
   ];
 
   String currentQuote = "오늘 할 운동을 내일로 미루지 말자";
@@ -1976,14 +1972,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                       Text(
                         '아직 오늘 운동을 시작하지 않았습니다.',
                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                      ),
-                      SizedBox(
-                        width: 200,
-                        height: 200,
-                        child: Lottie.asset(
-                          'assets/splash.json', // Lottie 애니메이션 파일 경로
-                          repeat: true,
-                        ),
                       ),
                       SizedBox(height: 32),
                       ElevatedButton(
