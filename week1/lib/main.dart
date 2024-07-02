@@ -1834,7 +1834,8 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: totalMinutes > 0 ?
+      AppBar(
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -1842,7 +1843,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
             color: Colors.deepPurple,
           ),
         ],
-      ),
+      ) : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: totalMinutes > 0
@@ -2088,7 +2089,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   @override
   void initState() {
     super.initState();
-    sortedEntries = widget.workHistory.entries.toList()
+    sortedEntries = widget.workHistory.entries.where((entry) => entry.value > 0).toList()
       ..sort((a, b) => DateTime.parse(b.key).compareTo(DateTime.parse(a.key)));
     filteredEntries = sortedEntries;
   }
