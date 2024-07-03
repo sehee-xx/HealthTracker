@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     });
 
-    clearPreferences();
+    // clearPreferences();
   }
 
   Future<void> clearPreferences() async {
