@@ -1682,8 +1682,6 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     setState(() {
       if (loadedWorkHistory.containsKey(todayKey)) {
         todayWorkout = loadedTodayWorkout;
-      } else {
-        todayWorkout = {};
       }
       workHistory = loadedWorkHistory;
     });
