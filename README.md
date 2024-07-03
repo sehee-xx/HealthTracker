@@ -55,7 +55,7 @@ Drawer 안에는 Contact, Image, Health, Care `각 탭으로 이동`할 수 있�
 
 <img src="https://github.com/sehee-xx/HealthTracker/assets/129670024/f0f45737-5247-49f0-a222-c9cfbc8c4ac5" width="200" height="400"/>
 
-우측 하단의 + 버튼을 눌러 이름과 전화번호를 입력해 `연락처를 추가`할 수 있는 기능을 구현했습니다.
+우측 하단의 + 모양 `floatingActionButton`을 눌러 이름과 전화번호를 입력해 연락처를 추가할 수 있는 기능을 구현했습니다.
 
 `sharedPreference`를 사용해서 추가된 연락처를 기기에 저장해 어플을 재시작 해도 데이터가 유지되도록 만들었습니다.
 
