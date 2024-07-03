@@ -19,26 +19,6 @@ void main() {
   });
 }
 
-final Map<String, int> todayWorkout = {
-  '러닝': 0,
-  '걷기': 0,
-  '자전거 타기': 0,
-  '수영': 0,
-  '요가': 0,
-  '웨이트': 0,
-  '기타': 0,
-};
-
-final Map<String, int> workHistory = {
-  '2024-06-19': 55,
-  '2024-06-20': 50,
-  '2024-06-23': 80,
-  '2024-06-24': 50,
-  '2024-06-25': 35,
-  '2024-06-27': 70,
-  '2024-06-28': 60,
-};
-
 class ImageTuple {
   final File image;
   final String author;
@@ -1686,11 +1666,26 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
 
   Future<void> _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    final String? todayWorkoutString = prefs.getString('todayWorkout');
+    final String? workHistoryString = prefs.getString('workHistory');
+    
+    final Map<String, int> loadedTodayWorkout = todayWorkoutString != null
+      ? Map<String, int>.from(json.decode(todayWorkoutString))
+      : {};
+    final Map<String, int> loadedWorkHistory = workHistoryString != null
+      ? Map<String, int>.from(json.decode(workHistoryString))
+      : {};
+
+    final String todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
     setState(() {
-      todayWorkout = Map<String, int>.from(json.decode(
-          prefs.getString('todayWorkout') ?? json.encode(todayWorkout)));
-      workHistory = Map<String, int>.from(json
-          .decode(prefs.getString('workHistory') ?? json.encode(workHistory)));
+      if (loadedWorkHistory.containsKey(todayKey)) {
+        todayWorkout = loadedTodayWorkout;
+      } else {
+        todayWorkout = {};
+      }
+      workHistory = loadedWorkHistory;
     });
   }
 
