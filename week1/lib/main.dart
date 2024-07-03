@@ -12,6 +12,7 @@ import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_image/flutter_image.dart';
 
 void main() {
   initializeDateFormatting('ko_KR', null).then((_) {
@@ -116,9 +117,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   List<Map<String, String>> contacts = []; // JSON 데이터를 담을 리스트
   final ImagePicker _picker = ImagePicker();
-  late TabController _tabController;
   List<ImageTuple> _images = [];
   List<ImageTuple> defaultImageset = [];
+  late TabController _tabController;
 
   final List<String> quotes = [
     "오늘 할 운동을 내일로 미루지 말자",
@@ -152,10 +153,22 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(_animationController);
+    _loadContacts(); // JSON 데이터를 불러오는 함수 호출
+    _loadInitialImages(); // 디폴트 이미지 추가
+    _loadImages();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(_animationController);
   }
 
   @override
   void dispose() {
+    // 추가된 코드: GifController 해제
     _tabController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -1957,10 +1970,13 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.sentiment_dissatisfied,
-                        color: Colors.deepPurple,
-                        size: 80,
+                      // Icon(
+                      //   Icons.sentiment_dissatisfied,
+                      //   color: Colors.deepPurple,
+                      //   size: 80,
+                      // ),
+                      SizedBox(
+                        child: Image.asset('assets/sad.gif'),
                       ),
                       SizedBox(height: 16),
                       Text(
