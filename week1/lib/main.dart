@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     });
 
-    // clearPreferences();
+    clearPreferences();
   }
 
   Future<void> clearPreferences() async {
@@ -1648,15 +1648,7 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
     '기타': 0,
   };
 
-  Map<String, int> workHistory = {
-    '2024-06-19': 55,
-    '2024-06-20': 50,
-    '2024-06-23': 80,
-    '2024-06-24': 50,
-    '2024-06-25': 35,
-    '2024-06-27': 70,
-    '2024-06-28': 60,
-  };
+  Map<String, int> workHistory = {};
 
   @override
   void initState() {
@@ -1675,7 +1667,18 @@ class _HealthRecordWidgetState extends State<HealthRecordWidget> {
       : {};
     final Map<String, int> loadedWorkHistory = workHistoryString != null
       ? Map<String, int>.from(json.decode(workHistoryString))
-      : {};
+      : {
+        '2024-06-19': 55,
+        '2024-06-20': 50,
+        '2024-06-23': 80,
+        '2024-06-24': 50,
+        '2024-06-25': 35,
+        '2024-06-27': 70,
+        '2024-06-28': 60,
+        '2024-06-30': 40,
+        '2024-07-01': 45,
+        '2024-07-02': 50,
+      };
 
     final String todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
