@@ -153,17 +153,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(_animationController);
-    _loadContacts(); // JSON 데이터를 불러오는 함수 호출
-    _loadInitialImages(); // 디폴트 이미지 추가
-    _loadImages();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(_animationController);
   }
 
   @override
